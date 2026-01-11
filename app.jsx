@@ -1679,7 +1679,17 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   const [showMindMapPopup, setShowMindMapPopup] = React.useState(false);
   const [mediaType, setMediaType] = React.useState('image');
   const [localTitle, setLocalTitle] = React.useState('');
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
   const quillRef = React.useRef(null);
+
+  // Détection du redimensionnement
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   React.useEffect(() => {
     if (selectedNote) {
@@ -1750,7 +1760,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
             let startX, startY, startWidth;
             let lastTouchDistance = 0;
 
-            // ========== GESTION SOURIS (Desktop) ==========
+            // GESTION SOURIS
             media.addEventListener('wheel', (e) => {
               if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
@@ -1791,9 +1801,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               isInteracting = false;
             });
 
-            // ========== GESTION TACTILE (Mobile) ==========
-            
-            // Fonction pour calculer la distance entre deux doigts
+            // GESTION TACTILE
             const getTouchDistance = (touch1, touch2) => {
               const dx = touch2.clientX - touch1.clientX;
               const dy = touch2.clientY - touch1.clientY;
@@ -1804,13 +1812,11 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               e.stopPropagation();
               
               if (e.touches.length === 1) {
-                // Un seul doigt : déplacement
                 const touch = e.touches[0];
                 startX = touch.clientX;
                 startY = touch.clientY;
                 isInteracting = true;
               } else if (e.touches.length === 2) {
-                // Deux doigts : redimensionnement (pinch)
                 e.preventDefault();
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
@@ -1824,7 +1830,6 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               if (!isInteracting) return;
 
               if (e.touches.length === 1) {
-                // Un seul doigt : déplacement
                 e.preventDefault();
                 const touch = e.touches[0];
                 const deltaX = touch.clientX - startX;
@@ -1838,7 +1843,6 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
                   startY = touch.clientY;
                 }
               } else if (e.touches.length === 2) {
-                // Deux doigts : redimensionnement (pinch)
                 e.preventDefault();
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
@@ -1848,7 +1852,6 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
                   const scale = currentDistance / lastTouchDistance;
                   const newWidth = startWidth * scale;
                   
-                  // Limiter la taille min/max
                   if (newWidth >= 50 && newWidth <= 1000) {
                     media.style.width = newWidth + 'px';
                   }
@@ -1863,7 +1866,6 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               isInteracting = false;
               lastTouchDistance = 0;
               
-              // Si c'était un tap rapide (pas un drag), ne rien faire
               if (e.changedTouches.length === 1 && !e.cancelable) {
                 e.stopPropagation();
               }
@@ -1989,24 +1991,65 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
 
   return (
     <div className="mainContent">
-      <div className="editor-container">
-        <div className="editor-header">
+      <div className="editor-container" style={{ 
+        padding: isMobile ? '16px' : '20px',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: isMobile ? '12px' : '16px',
+        paddingBottom: isMobile ? '80px' : '20px'
+      }}>
+        <div className="editor-header" style={{
+          marginBottom: isMobile ? '4px' : '0',
+          display: 'flex',
+          gap: isMobile ? '8px' : '12px',
+          alignItems: 'center'
+        }}>
           <input
             type="text"
             value={localTitle}
             onChange={handleTitleChange}
             className="title-input"
             placeholder="Titre de la note"
+            style={{
+              flex: 1,
+              padding: isMobile ? '14px 16px' : '12px 20px',
+              fontSize: isMobile ? '18px' : '20px',
+              borderRadius: isMobile ? '12px' : '10px',
+              minHeight: isMobile ? '48px' : 'auto'
+            }}
           />
           <button 
             className="save-button"
             onClick={() => setShowSavePopup(true)}
+            style={{
+              padding: isMobile ? '12px' : '12px',
+              minWidth: isMobile ? '48px' : '48px',
+              minHeight: isMobile ? '48px' : '48px',
+              borderRadius: isMobile ? '12px' : '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
-            <img src="img/save.png" alt="Sauvegarder"/>
+            <img src="img/save.png" alt="Sauvegarder" style={{ 
+              width: isMobile ? '24px' : '20px',
+              height: isMobile ? '24px' : '20px'
+            }}/>
           </button>
         </div>
         
-        <div id="editor" ref={quillRef} style={{ flex: 1, backgroundColor: 'transparent' }}></div>
+        <div id="editor" ref={quillRef} style={{ 
+          flex: 1, 
+          backgroundColor: 'transparent',
+          minHeight: isMobile ? 'calc(100vh - 280px)' : 'auto',
+          padding: isMobile ? '16px 8px' : '20px',
+          fontSize: isMobile ? '16px' : '15px',
+          lineHeight: isMobile ? '1.7' : '1.5',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          borderRadius: isMobile ? '12px' : '8px'
+        }}></div>
       </div>
 
       <SavePopup
@@ -2042,19 +2085,140 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         </div>
       )}
 
-      <div className="tool-bar">
-        <ul className="tool-bar-list">
-          <li><button className="image" onClick={() => imageAction()}><img src="img/image.png" alt="Image"/></button></li>
-          <li><button className="mind-map" onClick={() => setShowMindMapPopup(true)}><img src="img/mindmap.png" alt="Carte mentale"/></button></li>
-          <li><button onClick={() => handleFormat('bold')} className={activeFormats.bold ? 'active' : ''}><img src="img/bold.png" alt="Gras"/></button></li>
-          <li><button onClick={() => handleFormat('italic')} className={activeFormats.italic ? 'active' : ''}><img src="img/italic.png" alt="Italique"/></button></li>
-          <li><button onClick={() => handleFormat('underline')} className={activeFormats.underline ? 'active' : ''}><img src="img/underline.png" alt="Souligné"/></button></li>
-          <li><button onClick={() => handleFormat('strike')} className={activeFormats.strike ? 'active' : ''}><img src="img/strikethrough.png" alt="Barré"/></button></li>
-          <li><button onClick={() => handleFormat('list', 'bullet')} className={activeFormats['list-bullet'] ? 'active' : ''}><img src="img/bullet_list.png" alt="Liste à puces"/></button></li>
-          <li><button onClick={() => handleFormat('list', 'ordered')} className={activeFormats['list-ordered'] ? 'active' : ''}><img src="img/numbered_list.png" alt="Liste numérotée"/></button></li>
-          <li><button onClick={() => handleFormat('header', 1)} className={activeFormats['header-1'] ? 'active' : ''}><img src="img/h1.png" alt="Titre 1"/></button></li>
-          <li><button onClick={() => handleFormat('header', 2)} className={activeFormats['header-2'] ? 'active' : ''}><img src="img/h2.png" alt="Titre 2"/></button></li>
-          <li><button onClick={() => handleFormat('header', 3)} className={activeFormats['header-3'] ? 'active' : ''}><img src="img/h3.png" alt="Titre 3"/></button></li>
+      <div className="tool-bar" style={{
+        padding: isMobile ? '12px 10px 16px 10px' : '12px 16px',
+        gap: isMobile ? '8px' : '12px',
+        minHeight: isMobile ? '68px' : '64px',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        display: 'flex',
+        alignItems: 'center',
+        boxShadow: isMobile ? '0 -4px 12px rgba(0, 0, 0, 0.15)' : '0 -2px 8px rgba(0, 0, 0, 0.1)'
+      }}>
+        <ul className="tool-bar-list" style={{
+          display: 'flex',
+          gap: isMobile ? '8px' : '8px',
+          flexWrap: 'nowrap',
+          margin: 0,
+          padding: 0,
+          listStyle: 'none',
+          alignItems: 'center'
+        }}>
+          <li><button className="image" onClick={() => imageAction()} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/image.png" alt="Image" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button className="mind-map" onClick={() => setShowMindMapPopup(true)} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/mindmap.png" alt="Carte mentale" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('bold')} className={activeFormats.bold ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/bold.png" alt="Gras" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('italic')} className={activeFormats.italic ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/italic.png" alt="Italique" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('underline')} className={activeFormats.underline ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/underline.png" alt="Souligné" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('strike')} className={activeFormats.strike ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/strikethrough.png" alt="Barré" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('list', 'bullet')} className={activeFormats['list-bullet'] ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/bullet_list.png" alt="Liste à puces" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('list', 'ordered')} className={activeFormats['list-ordered'] ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/numbered_list.png" alt="Liste numérotée" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('header', 1)} className={activeFormats['header-1'] ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/h1.png" alt="Titre 1" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('header', 2)} className={activeFormats['header-2'] ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/h2.png" alt="Titre 2" style={{ width: '20px', height: '20px' }}/></button></li>
+          
+          <li><button onClick={() => handleFormat('header', 3)} className={activeFormats['header-3'] ? 'active' : ''} style={{ 
+            minWidth: isMobile ? '48px' : '40px',
+            minHeight: isMobile ? '48px' : '40px',
+            padding: isMobile ? '12px' : '8px',
+            borderRadius: isMobile ? '12px' : '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}><img src="img/h3.png" alt="Titre 3" style={{ width: '20px', height: '20px' }}/></button></li>
         </ul>
       </div>
     </div>
