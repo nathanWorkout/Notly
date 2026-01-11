@@ -1759,8 +1759,9 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
             let isInteracting = false;
             let startX, startY, startWidth;
             let lastTouchDistance = 0;
+            let initialPinchWidth = 0;
 
-            // GESTION SOURIS
+            // GESTION SOURIS (Desktop)
             media.addEventListener('wheel', (e) => {
               if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
@@ -1801,7 +1802,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               isInteracting = false;
             });
 
-            // GESTION TACTILE
+            // GESTION TACTILE (Mobile) - OPTIMISÉE POUR ZOOM
             const getTouchDistance = (touch1, touch2) => {
               const dx = touch2.clientX - touch1.clientX;
               const dy = touch2.clientY - touch1.clientY;
@@ -1812,15 +1813,18 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               e.stopPropagation();
               
               if (e.touches.length === 1) {
+                // Un seul doigt : déplacement
                 const touch = e.touches[0];
                 startX = touch.clientX;
                 startY = touch.clientY;
                 isInteracting = true;
               } else if (e.touches.length === 2) {
+                // Deux doigts : zoom (pinch)
                 e.preventDefault();
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 lastTouchDistance = getTouchDistance(touch1, touch2);
+                initialPinchWidth = media.offsetWidth;
                 startWidth = media.offsetWidth;
                 isInteracting = true;
               }
@@ -1830,6 +1834,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
               if (!isInteracting) return;
 
               if (e.touches.length === 1) {
+                // Un seul doigt : déplacement
                 e.preventDefault();
                 const touch = e.touches[0];
                 const deltaX = touch.clientX - startX;
@@ -1843,18 +1848,25 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
                   startY = touch.clientY;
                 }
               } else if (e.touches.length === 2) {
+                // Deux doigts : zoom (pinch)
                 e.preventDefault();
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 const currentDistance = getTouchDistance(touch1, touch2);
                 
                 if (lastTouchDistance > 0) {
+                  // Calcul du ratio de zoom
                   const scale = currentDistance / lastTouchDistance;
-                  const newWidth = startWidth * scale;
+                  let newWidth = startWidth * scale;
                   
-                  if (newWidth >= 50 && newWidth <= 1000) {
-                    media.style.width = newWidth + 'px';
-                  }
+                  // Limites de taille plus larges pour le mobile
+                  const minWidth = isMobile ? 100 : 50;
+                  const maxWidth = isMobile ? 2000 : 1000;
+                  
+                  // Appliquer les limites
+                  newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+                  
+                  media.style.width = newWidth + 'px';
                 }
                 
                 lastTouchDistance = currentDistance;
@@ -1865,6 +1877,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
             media.addEventListener('touchend', (e) => {
               isInteracting = false;
               lastTouchDistance = 0;
+              initialPinchWidth = 0;
               
               if (e.changedTouches.length === 1 && !e.cancelable) {
                 e.stopPropagation();
@@ -1874,6 +1887,25 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
             media.addEventListener('touchcancel', () => {
               isInteracting = false;
               lastTouchDistance = 0;
+              initialPinchWidth = 0;
+            });
+
+            // Double-tap pour réinitialiser la taille (mobile)
+            let lastTapTime = 0;
+            media.addEventListener('touchend', (e) => {
+              const currentTime = new Date().getTime();
+              const tapLength = currentTime - lastTapTime;
+              
+              if (tapLength < 300 && tapLength > 0 && e.touches.length === 0) {
+                // Double-tap détecté : réinitialiser la taille
+                e.preventDefault();
+                media.style.width = '';
+                media.style.left = '';
+                media.style.top = '';
+                media.style.position = '';
+              }
+              
+              lastTapTime = currentTime;
             });
           }
         });
@@ -1889,7 +1921,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         observer.disconnect();
       };
     }
-  }, [selectedNote?.id]);
+  }, [selectedNote?.id, isMobile]);
 
   const handleFormat = (format, value = true) => {
     if (quillRef.current) {
