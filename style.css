@@ -2316,76 +2316,69 @@ body.light-mode .folder-option.selected .folder-option-icon {
     border-color: #6366f1;
 }
 
-/* ==================== RESPONSIVE MOBILE ==================== */
+/* ==================== RESPONSIVE ==================== */
+
+/* 1. TOOLBAR - Scroll horizontal sur mobile */
+@media screen and (max-width: 768px) {
+  .tool-bar {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    padding: 8px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .tool-bar-list {
+    gap: 20px;
+    justify-content: flex-start;
+    flex-wrap: nowrap; /* Important : ne pas revenir à la ligne */
+    min-width: max-content; /* S'adapte au contenu */
+  }
+  
+  /* Cacher la scrollbar mais garder la fonctionnalité */
+  .tool-bar::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .tool-bar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .tool-bar::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 3px;
+  }
+}
+
+/* 2. MENU BURGER pour afficher la sidebar sur mobile */
+.menu-burger {
+  display: none; /* Caché par défaut sur desktop */
+}
 
 @media screen and (max-width: 768px) {
-  
-  /* Header mobile */
-  .header {
-    padding: 8px;
-    flex-wrap: wrap;
-  }
-  
-  .logo {
-    height: 40px;
-    font-size: 20px;
-  }
-  
-  .nav-button-header {
-    gap: 6px;
-  }
-  
-  .nav-button-header button {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .nav-button-header li[style*="color"] {
-    display: none !important; /* Cacher l'email sur mobile */
-  }
-  
-  .profil {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .settings {
-    padding: 6px;
-  }
-  
-  /* Layout mobile - Sidebar cachée par défaut */
-  .content {
-    flex-direction: column;
-  }
-  
-  .leftContainer {
-    position: fixed;
-    top: 0;
-    left: -100%;
-    width: 80%;
-    max-width: 300px;
-    height: 100vh;
-    z-index: 999;
-    transition: left 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
-  }
-  
-  .leftContainer.open {
-    left: 0;
-  }
-  
-  /* Bouton menu burger (à ajouter dans le HTML) */
+  /* Afficher le bouton burger */
   .menu-burger {
     display: block;
     position: fixed;
-    top: 15px;
+    top: 70px; /* Sous le header */
     left: 15px;
-    z-index: 1000;
+    z-index: 1001;
     background-color: #6366f1;
     border: none;
     border-radius: 8px;
     padding: 10px;
     cursor: pointer;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s;
+  }
+  
+  .menu-burger:hover {
+    background-color: #4f46e5;
+    transform: scale(1.05);
   }
   
   .menu-burger span {
@@ -2395,172 +2388,81 @@ body.light-mode .folder-option.selected .folder-option-icon {
     background-color: #ffffff;
     margin: 5px 0;
     border-radius: 2px;
+    transition: all 0.3s;
+  }
+  
+  /* Animation du burger quand ouvert */
+  .menu-burger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+  }
+  
+  .menu-burger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .menu-burger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+  }
+  
+  /* Sidebar cachée par défaut */
+  .leftContainer {
+    position: fixed;
+    top: 60px; /* Sous le header */
+    left: -100%;
+    width: 80%;
+    max-width: 300px;
+    height: calc(100vh - 60px);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+  }
+  
+  /* Sidebar ouverte */
+  .leftContainer.open {
+    left: 0;
+  }
+  
+  /* Overlay sombre quand sidebar ouverte */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+  }
+  
+  .sidebar-overlay.show {
+    display: block;
   }
   
   /* Main content prend toute la largeur */
   .mainContent {
     width: 100%;
     padding: 10px;
+    margin-top: 50px; /* Place pour le bouton burger */
+    padding-bottom: 80px; /* Place pour la toolbar */
   }
   
-  /* Notes title plus petit */
-  .notes-title {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-  }
-  
-  /* Boutons d'ajout plus petits */
-  .add-note {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .new-note-button,
-  .add-new-directory {
-    font-size: 12px;
-    padding: 8px;
-  }
-  
-  /* Editor header mobile */
-  .editor-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .title-input {
-    font-size: 24px;
-  }
-  
-  .save-button {
-    width: 100%;
-    padding: 12px;
-  }
-  
-  /* Toolbar mobile - En bas fixe */
-  .tool-bar {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 0;
-    padding: 8px 10px;
-    overflow-x: auto;
-  }
-  
-  .tool-bar-list {
-    gap: 20px;
-    justify-content: flex-start;
-  }
-  
-  .tool-bar-list li button {
-    padding: 8px;
-  }
-  
-  .tool-bar-list li button img {
-    width: 20px;
-    height: 20px;
-  }
-  
-  /* Popups mobile */
-  .popup-container,
-  .save-popup-container,
-  .media-popup-container {
-    width: 95%;
-    max-width: 95%;
-    margin: 10px;
-  }
-  
-  .popup-title,
-  .save-popup-title,
-  .media-popup-title {
-    font-size: 18px;
-  }
-  
-  /* Mind Map mobile */
-  .mindmap-popup-container {
-    width: 95vw;
-    height: 90vh;
-  }
-  
-  .mindmap-toolbar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .mindmap-hint {
-    display: none; /* Cacher le hint sur mobile */
-  }
-  
-  /* Folder options mobile */
-  .folder-option {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-  
-  /* Notes list mobile */
-  .note-button {
-    padding: 10px;
-  }
-  
-  .note-title {
-    font-size: 13px;
-  }
-  
-  .note-date {
-    font-size: 10px;
-  }
-  
-  /* Success notification mobile */
-  .success-notification {
-    bottom: 80px; /* Au-dessus de la toolbar */
-    right: 10px;
-    left: 10px;
-  }
-  
-  .success-content {
-    min-width: auto;
-    width: 100%;
+  /* Editor */
+  .editor-container {
+    height: calc(100vh - 200px); /* Ajuster la hauteur */
   }
 }
 
-/* ==================== RESPONSIVE TRÈS PETIT MOBILE ==================== */
+/* Mode clair pour le burger */
+body.light-mode .menu-burger {
+  background-color: #6366f1;
+}
 
-@media screen and (max-width: 480px) {
-  
-  .header {
-    padding: 6px;
-  }
-  
-  .logo {
-    height: 35px;
-    font-size: 18px;
-  }
-  
-  .nav-button-header button {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-  
-  .profil,
-  .settings {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .title-input {
-    font-size: 20px;
-  }
-  
-  .mainContent {
-    padding: 8px;
-  }
-  
-  .tool-bar-list {
-    gap: 15px;
-  }
-  
-  .popup-container,
-  .save-popup-container,
-  .media-popup-container {
-    padding: 16px;
-  }
+body.light-mode .menu-burger:hover {
+  background-color: #4f46e5;
+}
+
+body.light-mode .sidebar-overlay {
+  background-color: rgba(0, 0, 0, 0.3);
 }

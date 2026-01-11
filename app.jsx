@@ -1,4 +1,4 @@
-// Configuration de firebase
+// ==================== CONFIGURATION FIREBASE ====================
 const firebaseConfig = {
     apiKey: "AIzaSyD9NTEtnctct44x27qEBuIhKMZe1GZD8qI",
     authDomain: "appli-de-note.firebaseapp.com",
@@ -7,14 +7,14 @@ const firebaseConfig = {
     messagingSenderId: "910368767610",
     appId: "1:910368767610:web:7fad62a40f6bc4d813c5c3",
     measurementId: "G-0LE86GSLQF"
-  };
+};
 
 // Initialisation de Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Composant App principal
+// ==================== COMPOSANT APP PRINCIPAL ====================
 function App() {
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -22,152 +22,167 @@ function App() {
   const [selectedNote, setSelectedNote] = React.useState(null);
   const [folders, setFolders] = React.useState([]);
   const [selectedFolder, setSelectedFolder] = React.useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   React.useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
   React.useEffect(() => {
-  if (!user) {
-    setNotes([]);
-    setFolders([]);
-    setSelectedNote(null);
-    return;
-  }
+    if (!user) {
+      setNotes([]);
+      setFolders([]);
+      setSelectedNote(null);
+      return;
+    }
 
-  // Charger les dossiers
-  const unsubscribeFolders = db.collection('folders')
-    .where('userId', '==', user.uid)
-    .onSnapshot((snapshot) => {
-      const foldersData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setFolders(foldersData);
-    });
+    const unsubscribeFolders = db.collection('folders')
+      .where('userId', '==', user.uid)
+      .onSnapshot((snapshot) => {
+        const foldersData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setFolders(foldersData);
+      });
 
-  // Charger les notes
-  const unsubscribeNotes = db.collection('notes')
-    .where('userId', '==', user.uid)
-    .orderBy('createdAt', 'desc')
-    .onSnapshot((snapshot) => {
-      const notesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate().toLocaleDateString('fr-FR') || new Date().toLocaleDateString('fr-FR')
-      }));
-      setNotes(notesData);
-    });
+    const unsubscribeNotes = db.collection('notes')
+      .where('userId', '==', user.uid)
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((snapshot) => {
+        const notesData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate().toLocaleDateString('fr-FR') || new Date().toLocaleDateString('fr-FR')
+        }));
+        setNotes(notesData);
+      });
 
-  return () => {
-    unsubscribeFolders();
-    unsubscribeNotes();
+    return () => {
+      unsubscribeFolders();
+      unsubscribeNotes();
+    };
+  }, [user]);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
-}, [user]);
+
+  const handleSelectNote = (note) => {
+    setSelectedNote(note);
+    if (window.innerWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  const handleSelectFolder = (folderId) => {
+    setSelectedFolder(folderId);
+    if (window.innerWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   const createNote = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  const newNote = {
-    title: "Nouvelle note",
-    content: "",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    userId: user.uid,
-    folderId: selectedFolder || null
+    const newNote = {
+      title: "Nouvelle note",
+      content: "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      userId: user.uid,
+      folderId: selectedFolder || null
+    };
+
+    try {
+      const docRef = await db.collection('notes').add(newNote);
+      const createdNote = {
+        id: docRef.id,
+        ...newNote,
+        createdAt: new Date().toLocaleDateString('fr-FR')
+      };
+      setSelectedNote(createdNote);
+    } catch (error) {
+      console.error("Erreur:", error);
+    }
   };
 
-  try {
-    const docRef = await db.collection('notes').add(newNote);
-    const createdNote = {
-      id: docRef.id,
-      ...newNote,
-      createdAt: new Date().toLocaleDateString('fr-FR')
-    };
-    setSelectedNote(createdNote);
-  } catch (error) {
-    console.error("Erreur:", error);
-  }
-};
-
   const deleteNote = async (id) => {
-  if (!user) return;
+    if (!user) return;
 
-  try {
-    await db.collection('notes').doc(id).delete();
-    if (selectedNote?.id === id) {
-      setSelectedNote(null);
+    try {
+      await db.collection('notes').doc(id).delete();
+      if (selectedNote?.id === id) {
+        setSelectedNote(null);
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
     }
-  } catch (error) {
-    console.error("Erreur:", error);
-  }
-};
+  };
 
   const updateNote = async (id, field, value) => {
-  if (!user) return;
+    if (!user) return;
 
-  try {
-    await db.collection('notes').doc(id).update({
-      [field]: value
-    });
+    try {
+      await db.collection('notes').doc(id).update({
+        [field]: value
+      });
 
-    setNotes(notes.map(note => 
-      note.id === id ? { ...note, [field]: value } : note
-    ));
+      setNotes(notes.map(note => 
+        note.id === id ? { ...note, [field]: value } : note
+      ));
 
-    if (selectedNote?.id === id) {
-      setSelectedNote({ ...selectedNote, [field]: value });
+      if (selectedNote?.id === id) {
+        setSelectedNote({ ...selectedNote, [field]: value });
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
     }
-  } catch (error) {
-    console.error("Erreur:", error);
-  }
-};
+  };
 
   const createNewFolder = async (folderName) => {
-  if (!user || !folderName) return;
+    if (!user || !folderName) return;
 
-  try {
-    const newFolder = {
-      name: folderName,
-      userId: user.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    const docRef = await db.collection('folders').add(newFolder);
-    return { id: docRef.id, ...newFolder };
-  } catch (error) {
-    console.error("Erreur:", error);
-  }
-};
-
-const deleteFolder = async (folderId) => {
-  if (!user) return;
-
-  try {
-    await db.collection('folders').doc(folderId).delete();
-    
-    // Déplacer les notes vers la racine
-    const batch = db.batch();
-    const notesInFolder = notes.filter(note => note.folderId === folderId);
-    
-    notesInFolder.forEach(note => {
-      const noteRef = db.collection('notes').doc(note.id);
-      batch.update(noteRef, { folderId: null });
-    });
-    
-    await batch.commit();
-    
-    if (selectedFolder === folderId) {
-      setSelectedFolder(null);
+    try {
+      const newFolder = {
+        name: folderName,
+        userId: user.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      const docRef = await db.collection('folders').add(newFolder);
+      return { id: docRef.id, ...newFolder };
+    } catch (error) {
+      console.error("Erreur:", error);
     }
-  } catch (error) {
-    console.error("Erreur:", error);
-  }
-};
+  };
+
+  const deleteFolder = async (folderId) => {
+    if (!user) return;
+
+    try {
+      await db.collection('folders').doc(folderId).delete();
+      
+      const batch = db.batch();
+      const notesInFolder = notes.filter(note => note.folderId === folderId);
+      
+      notesInFolder.forEach(note => {
+        const noteRef = db.collection('notes').doc(note.id);
+        batch.update(noteRef, { folderId: null });
+      });
+      
+      await batch.commit();
+      
+      if (selectedFolder === folderId) {
+        setSelectedFolder(null);
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+    }
+  };
 
   const filteredNotes = selectedFolder 
     ? notes.filter(note => note.folderId === selectedFolder)
@@ -184,6 +199,21 @@ const deleteFolder = async (folderId) => {
   return (
     <div className="App">
       <Header user={user} />
+      
+      <button 
+        className={`menu-burger ${isSidebarOpen ? 'open' : ''}`}
+        onClick={toggleSidebar}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`}
+        onClick={toggleSidebar}
+      ></div>
+      
       <div className="content">
         <NotesSidebar 
           notes={notes}
@@ -191,12 +221,13 @@ const deleteFolder = async (folderId) => {
           folders={folders}
           selectedNote={selectedNote}
           selectedFolder={selectedFolder}
-          onSelectNote={setSelectedNote}
-          onSelectFolder={setSelectedFolder}
+          onSelectNote={handleSelectNote}
+          onSelectFolder={handleSelectFolder}
           onCreateNote={createNote}
           onDeleteNote={deleteNote}
           onDeleteFolder={deleteFolder}
           onCreateFolder={createNewFolder}
+          isOpen={isSidebarOpen}
         />
         <MainContent 
           selectedNote={selectedNote}
@@ -209,6 +240,7 @@ const deleteFolder = async (folderId) => {
   );
 }
 
+// ==================== HEADER ====================
 function Header({ user }) {
   const [showAuthPopup, setShowAuthPopup] = React.useState(false);
   const [authMode, setAuthMode] = React.useState('login');
@@ -316,6 +348,7 @@ function Header({ user }) {
   );
 }
 
+// ==================== AUTH POPUP ====================
 function AuthPopup({ mode, onClose, onSwitchMode }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -383,7 +416,6 @@ function AuthPopup({ mode, onClose, onSwitchMode }) {
           {mode === 'login' ? 'Se connecter' : 'Créer un compte'}
         </h3>
         
-        {/* Bouton Google */}
         <button 
           onClick={handleGoogleLogin}
           disabled={loading}
@@ -422,13 +454,7 @@ function AuthPopup({ mode, onClose, onSwitchMode }) {
           {loading ? 'Connexion...' : 'Continuer avec Google'}
         </button>
 
-        {/* Séparateur */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '12px', 
-          marginBottom: '20px' 
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
           <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
           <span style={{ color: '#9ca3af', fontSize: '13px' }}>OU</span>
           <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
@@ -509,6 +535,7 @@ function AuthPopup({ mode, onClose, onSwitchMode }) {
   );
 }
 
+// ==================== SETTINGS POPUP ====================
 function SettingsPopup({ darkMode, onToggleDarkMode, onClose }) {
   return (
     <div className="popup-overlay" onClick={onClose}>
@@ -583,6 +610,7 @@ function SettingsPopup({ darkMode, onToggleDarkMode, onClose }) {
   );
 }
 
+// ==================== CREATE FOLDER POPUP ====================
 function CreateFolderPopup({ isOpen, onClose, onCreateFolder }) {
   const [folderName, setFolderName] = React.useState("");
 
@@ -636,6 +664,7 @@ function CreateFolderPopup({ isOpen, onClose, onCreateFolder }) {
   );
 }
 
+// ==================== NOTES SIDEBAR ====================
 function NotesSidebar({ 
   notes, 
   filteredNotes, 
@@ -647,7 +676,8 @@ function NotesSidebar({
   onCreateNote, 
   onDeleteNote, 
   onDeleteFolder,
-  onCreateFolder 
+  onCreateFolder,
+  isOpen
 }) {
   const [deletePopup, setDeletePopup] = React.useState(null);
   const [deleteType, setDeleteType] = React.useState(null);
@@ -684,7 +714,7 @@ function NotesSidebar({
   };
 
   return (
-    <div className="leftContainer">
+    <div className={`leftContainer ${isOpen ? 'open' : ''}`}>
       <h2 className="notes-title">Mes pages</h2>
       <ul className="add-note">
         <li>
@@ -828,6 +858,7 @@ function NotesSidebar({
   );
 }
 
+// ==================== SAVE POPUP ====================
 function SavePopup({ isOpen, onClose, folders, selectedNote, onSave, onCreateFolder }) {
   const [selectedFolder, setSelectedFolder] = React.useState(selectedNote?.folderId || null);
   const [isCreatingFolder, setIsCreatingFolder] = React.useState(false);
@@ -945,6 +976,7 @@ function SavePopup({ isOpen, onClose, folders, selectedNote, onSave, onCreateFol
   );
 }
 
+// ==================== MEDIA POPUP ====================
 function MediaPopup({ isOpen, onClose, type, onInsert }) {
   const [activeTab, setActiveTab] = React.useState('upload');
   const [url, setUrl] = React.useState('');
@@ -1118,7 +1150,7 @@ function MediaPopup({ isOpen, onClose, type, onInsert }) {
   );
 }
 
-// Composant Mind Map simplifié et minimaliste
+// ==================== MIND MAP POPUP ====================
 function MindMapPopup({ isOpen, onClose, onInsert }) {
   const [nodes, setNodes] = React.useState([
     { id: 1, text: 'Idée centrale', x: 400, y: 250, parent: null }
@@ -1133,7 +1165,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
 
   if (!isOpen) return null;
 
-  // Couleurs pour les nœuds
   const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5'];
 
   const addChildNode = () => {
@@ -1179,7 +1210,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
   };
 
   const handleCanvasMouseDown = (e) => {
-    // Si on clique sur le canvas (pas sur un nœud)
     if (e.target === canvasRef.current || e.target.tagName === 'svg') {
       setIsPanning(true);
       setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
@@ -1200,13 +1230,11 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
 
   const handleMouseMove = (e) => {
     if (isPanning) {
-      // Déplacer la vue
       setOffset({
         x: e.clientX - panStart.x,
         y: e.clientY - panStart.y
       });
     } else if (dragging) {
-      // Déplacer un nœud
       const rect = canvasRef.current.getBoundingClientRect();
       const x = (e.clientX - rect.left - offset.x - dragging.offsetX);
       const y = (e.clientY - rect.top - offset.y - dragging.offsetY);
@@ -1225,9 +1253,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     canvas.height = 800;
     const ctx = canvas.getContext('2d', { alpha: true });
     
-    // PAS DE FOND - Transparent
-    
-    // Lignes de connexion entre les nœuds
     ctx.strokeStyle = '#6b7280';
     ctx.lineWidth = 3;
     nodes.forEach(node => {
@@ -1242,7 +1267,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
       }
     });
     
-    // Nœuds
     ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1253,7 +1277,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
       const width = Math.max(140, ctx.measureText(node.text).width + 40);
       const height = 50;
       
-      // Gradient
       const gradient = ctx.createLinearGradient(x - width/2, y - height/2, x + width/2, y + height/2);
       if (node.id === 1) {
         gradient.addColorStop(0, '#8b5cf6');
@@ -1276,7 +1299,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
       ctx.roundRect(x - width/2, y - height/2, width, height, 10);
       ctx.fill();
       
-      // Texte
       ctx.fillStyle = '#ffffff';
       ctx.fillText(node.text, x, y);
     });
@@ -1403,6 +1425,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
   );
 }
 
+// ==================== MAIN CONTENT ====================
 function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   const [showSavePopup, setShowSavePopup] = React.useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = React.useState(false);
@@ -1414,23 +1437,19 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   const [localTitle, setLocalTitle] = React.useState('');
   const quillRef = React.useRef(null);
 
-  // Synchroniser le titre local UNIQUEMENT quand on change de note
   React.useEffect(() => {
     if (selectedNote) {
       setLocalTitle(selectedNote.title);
     }
   }, [selectedNote?.id]);
 
-  // Gérer les changements de titre
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
     setLocalTitle(newTitle);
     onUpdateNote(selectedNote.id, 'title', newTitle);
   };
 
-  // Initialiser Quill quand on change de note
   React.useEffect(() => {
-    // Nettoyer l'éditeur existant
     if (quillRef.current) {
       quillRef.current = null;
       const editorElement = document.getElementById('editor');
@@ -1712,4 +1731,5 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   );
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+// Rendu dom
+ReactDOM.render(<App />, document.getElementById('root'));
