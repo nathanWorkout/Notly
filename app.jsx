@@ -2022,22 +2022,33 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   }
 
   return (
-    <div className="mainContent">
+    <div className="mainContent" style={{
+      height: isMobile ? '100vh' : 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      position: isMobile ? 'fixed' : 'relative',
+      top: isMobile ? '60px' : 'auto',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
+    }}>
       <div className="editor-container" style={{ 
         padding: isMobile ? '16px' : '20px',
-        height: isMobile ? '100vh' : '100%',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         gap: isMobile ? '12px' : '16px',
-        paddingBottom: isMobile ? '84px' : '20px',
-        paddingTop: isMobile ? '80px' : '20px',
-        boxSizing: 'border-box'
+        paddingBottom: isMobile ? '16px' : '20px',
+        overflow: 'hidden',
+        flex: 1
       }}>
         <div className="editor-header" style={{
           marginBottom: isMobile ? '4px' : '0',
           display: 'flex',
           gap: isMobile ? '8px' : '12px',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexShrink: 0
         }}>
           <input
             type="text"
@@ -2074,16 +2085,17 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         </div>
         
         <div id="editor" ref={quillRef} style={{ 
-          flex: 1, 
+          flex: 1,
           backgroundColor: 'transparent',
-          minHeight: isMobile ? 'calc(100vh - 220px)' : 'auto',
-          height: isMobile ? 'calc(100vh - 220px)' : 'auto',
-          padding: isMobile ? '16px 8px' : '20px',
+          padding: isMobile ? '16px 8px 80px 8px' : '20px',
           fontSize: isMobile ? '16px' : '15px',
           lineHeight: isMobile ? '1.7' : '1.5',
           overflowY: 'auto',
+          overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
-          borderRadius: isMobile ? '12px' : '8px'
+          borderRadius: isMobile ? '12px' : '8px',
+          minHeight: 0,
+          height: '100%'
         }}></div>
       </div>
 
