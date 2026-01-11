@@ -2,7 +2,7 @@
   "name": "Notly - Application de notes",
   "short_name": "Notly",
   "description": "Application de prise de notes avec éditeur riche et Mind Maps",
-  "start_url": "/",
+  "start_url": "https://github.com/nathanWorkout/Notly",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#6366f1",

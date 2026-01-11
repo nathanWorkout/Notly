@@ -15,6 +15,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ==================== COMPOSANT APP PRINCIPAL ====================
+// ==================== COMPOSANT APP PRINCIPAL ====================
 function App() {
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -23,6 +24,7 @@ function App() {
   const [folders, setFolders] = React.useState([]);
   const [selectedFolder, setSelectedFolder] = React.useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [showOfflineWarning, setShowOfflineWarning] = React.useState(false);
 
   React.useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -87,8 +89,13 @@ function App() {
   };
 
   const createNote = async () => {
-    if (!user) return;
+    // Si l'utilisateur n'est pas connecté, afficher le popup d'avertissement
+    if (!user) {
+      setShowOfflineWarning(true);
+      return;
+    }
 
+    // Si l'utilisateur est connecté, créer la note normalement
     const newNote = {
       title: "Nouvelle note",
       content: "",
@@ -110,7 +117,33 @@ function App() {
     }
   };
 
+  const createNoteWithoutLogin = () => {
+    // Créer une note temporaire en mémoire
+    const tempNote = {
+      id: `temp-${Date.now()}`,
+      title: "Nouvelle note (non sauvegardée)",
+      content: "",
+      createdAt: new Date().toLocaleDateString('fr-FR'),
+      userId: null,
+      folderId: null,
+      isTemporary: true
+    };
+
+    setNotes([tempNote, ...notes]);
+    setSelectedNote(tempNote);
+    setShowOfflineWarning(false);
+  };
+
   const deleteNote = async (id) => {
+    // Si c'est une note temporaire, la supprimer directement de l'état
+    if (id.toString().startsWith('temp-')) {
+      setNotes(notes.filter(n => n.id !== id));
+      if (selectedNote?.id === id) {
+        setSelectedNote(null);
+      }
+      return;
+    }
+
     if (!user) return;
 
     try {
@@ -124,20 +157,26 @@ function App() {
   };
 
   const updateNote = async (id, field, value) => {
+    // Mettre à jour localement
+    setNotes(notes.map(note => 
+      note.id === id ? { ...note, [field]: value } : note
+    ));
+
+    if (selectedNote?.id === id) {
+      setSelectedNote({ ...selectedNote, [field]: value });
+    }
+
+    // Si c'est une note temporaire, ne pas essayer de sauvegarder
+    if (id.toString().startsWith('temp-')) {
+      return;
+    }
+
     if (!user) return;
 
     try {
       await db.collection('notes').doc(id).update({
         [field]: value
       });
-
-      setNotes(notes.map(note => 
-        note.id === id ? { ...note, [field]: value } : note
-      ));
-
-      if (selectedNote?.id === id) {
-        setSelectedNote({ ...selectedNote, [field]: value });
-      }
     } catch (error) {
       console.error("Erreur:", error);
     }
@@ -235,6 +274,110 @@ function App() {
           onUpdateNote={updateNote}
           onCreateFolder={createNewFolder}
         />
+      </div>
+
+      {/* Popup d'avertissement hors connexion */}
+      {showOfflineWarning && (
+        <OfflineWarningPopup
+          onClose={() => setShowOfflineWarning(false)}
+          onContinue={createNoteWithoutLogin}
+        />
+      )}
+    </div>
+  );
+}
+
+// ==================== POPUP D'AVERTISSEMENT HORS CONNEXION ====================
+function OfflineWarningPopup({ onClose, onContinue }) {
+  return (
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div style={{ 
+            fontSize: '48px', 
+            marginBottom: '16px',
+            animation: 'pulse 2s ease-in-out infinite'
+          }}>
+            ⚠️
+          </div>
+          <h3 className="popup-title" style={{ fontSize: '24px', marginBottom: '12px' }}>
+            Note non sauvegardée
+          </h3>
+        </div>
+        
+        <div style={{ marginBottom: '24px', lineHeight: '1.6' }}>
+          <p className="popup-text" style={{ marginBottom: '16px', fontSize: '15px' }}>
+            Vous n'êtes pas connecté. Cette note sera <strong style={{ color: '#f59e0b' }}>temporaire</strong> et 
+            <strong style={{ color: '#ef4444' }}> ne sera pas sauvegardée</strong>.
+          </p>
+          
+          <div style={{ 
+            backgroundColor: '#2a2a2a', 
+            padding: '16px', 
+            borderRadius: '8px',
+            border: '1px solid #404040',
+            marginBottom: '16px'
+          }}>
+            <div style={{ fontSize: '14px', color: '#e0e0e0', marginBottom: '12px' }}>
+              <strong>⚠️ Attention :</strong>
+            </div>
+            <ul style={{ 
+              listStyle: 'none', 
+              padding: 0, 
+              margin: 0,
+              fontSize: '13px',
+              color: '#9ca3af'
+            }}>
+              <li style={{ marginBottom: '8px', paddingLeft: '20px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>•</span>
+                La note sera perdue si vous rechargez la page
+              </li>
+              <li style={{ marginBottom: '8px', paddingLeft: '20px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>•</span>
+                Vous ne pourrez pas la sauvegarder ou l'organiser
+              </li>
+              <li style={{ paddingLeft: '20px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>•</span>
+                Elle ne sera accessible que pendant cette session
+              </li>
+            </ul>
+          </div>
+
+          <p className="popup-text" style={{ 
+            textAlign: 'center', 
+            color: '#6366f1',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            💡 Connectez-vous pour sauvegarder vos notes de façon permanente !
+          </p>
+        </div>
+
+        <div className="popup-buttons" style={{ flexDirection: 'column', gap: '12px' }}>
+          <button 
+            className="popup-confirm"
+            onClick={onClose}
+            style={{ 
+              width: '100%',
+              backgroundColor: '#6366f1',
+              order: 1
+            }}
+          >
+            Me connecter
+          </button>
+          <button 
+            className="popup-cancel" 
+            onClick={onContinue}
+            style={{ 
+              width: '100%',
+              order: 2,
+              backgroundColor: '#404040',
+              color: '#e0e0e0'
+            }}
+          >
+            Continuer sans sauvegarder
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1209,6 +1352,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     setNodes(nodes.map(n => n.id === nodeId ? { ...n, text } : n));
   };
 
+  // Gestion des événements souris
   const handleCanvasMouseDown = (e) => {
     if (e.target === canvasRef.current || e.target.tagName === 'svg') {
       setIsPanning(true);
@@ -1243,6 +1387,60 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
   };
 
   const handleMouseUp = () => {
+    setDragging(null);
+    setIsPanning(false);
+  };
+
+  // Gestion des événements tactiles (mobile)
+  const handleCanvasTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      if (e.target === canvasRef.current || e.target.tagName === 'svg') {
+        setIsPanning(true);
+        setPanStart({ 
+          x: touch.clientX - offset.x, 
+          y: touch.clientY - offset.y 
+        });
+      }
+    }
+  };
+
+  const handleNodeTouchStart = (e, node) => {
+    if (editingNode === node.id) return;
+    e.stopPropagation();
+    
+    const touch = e.touches[0];
+    const rect = canvasRef.current.getBoundingClientRect();
+    
+    setDragging({ 
+      id: node.id, 
+      offsetX: touch.clientX - rect.left - offset.x - node.x, 
+      offsetY: touch.clientY - rect.top - offset.y - node.y 
+    });
+    setSelectedNode(node.id);
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      
+      if (isPanning) {
+        e.preventDefault();
+        setOffset({
+          x: touch.clientX - panStart.x,
+          y: touch.clientY - panStart.y
+        });
+      } else if (dragging) {
+        e.preventDefault();
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = (touch.clientX - rect.left - offset.x - dragging.offsetX);
+        const y = (touch.clientY - rect.top - offset.y - dragging.offsetY);
+        setNodes(nodes.map(n => n.id === dragging.id ? { ...n, x, y } : n));
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
     setDragging(null);
     setIsPanning(false);
   };
@@ -1338,11 +1536,11 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
             disabled={!selectedNode || selectedNode === 1}
             className={`mindmap-btn mindmap-btn-danger ${(!selectedNode || selectedNode === 1) ? '' : ''}`}
           >
-            <img src="/img/delete.png" alt="Supprimer" /> Supprimer
+            <img src="img/delete.png" alt="Supprimer" /> Supprimer
           </button>
           
           <div className="mindmap-hint">
-            <span>Clic sur le fond pour déplacer • Double-clic pour éditer</span>
+            <span>Glissez pour déplacer • Double-tap pour éditer</span>
           </div>
         </div>
 
@@ -1353,7 +1551,13 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+          onTouchStart={handleCanvasTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ 
+            cursor: isPanning ? 'grabbing' : 'grab',
+            touchAction: 'none'
+          }}
         >
           <div style={{ 
             transform: `translate(${offset.x}px, ${offset.y}px)`, 
@@ -1388,9 +1592,11 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
                   left: `${node.x}px`,
                   top: `${node.y}px`,
                   transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'auto'
+                  pointerEvents: 'auto',
+                  touchAction: 'none'
                 }}
                 onMouseDown={(e) => handleNodeMouseDown(e, node)}
+                onTouchStart={(e) => handleNodeTouchStart(e, node)}
                 onDoubleClick={() => setEditingNode(node.id)}
               >
                 {editingNode === node.id ? (
@@ -1403,6 +1609,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
                     onKeyDown={(e) => e.key === 'Enter' && setEditingNode(null)}
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                   />
                 ) : (
                   node.text
@@ -1424,7 +1631,6 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     </div>
   );
 }
-
 // ==================== MAIN CONTENT ====================
 function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   const [showSavePopup, setShowSavePopup] = React.useState(false);
