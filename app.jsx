@@ -2025,11 +2025,13 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
     <div className="mainContent">
       <div className="editor-container" style={{ 
         padding: isMobile ? '16px' : '20px',
-        height: '100%',
+        height: isMobile ? '100vh' : '100%',
         display: 'flex',
         flexDirection: 'column',
         gap: isMobile ? '12px' : '16px',
-        paddingBottom: isMobile ? '80px' : '20px'
+        paddingBottom: isMobile ? '84px' : '20px',
+        paddingTop: isMobile ? '80px' : '20px',
+        boxSizing: 'border-box'
       }}>
         <div className="editor-header" style={{
           marginBottom: isMobile ? '4px' : '0',
@@ -2074,7 +2076,8 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         <div id="editor" ref={quillRef} style={{ 
           flex: 1, 
           backgroundColor: 'transparent',
-          minHeight: isMobile ? 'calc(100vh - 280px)' : 'auto',
+          minHeight: isMobile ? 'calc(100vh - 220px)' : 'auto',
+          height: isMobile ? 'calc(100vh - 220px)' : 'auto',
           padding: isMobile ? '16px 8px' : '20px',
           fontSize: isMobile ? '16px' : '15px',
           lineHeight: isMobile ? '1.7' : '1.5',
