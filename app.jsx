@@ -1304,6 +1304,8 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
   const [isPanning, setIsPanning] = React.useState(false);
   const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
+  const [tapTimeout, setTapTimeout] = React.useState(null);
+  const [lastTap, setLastTap] = React.useState(0);
   const canvasRef = React.useRef(null);
 
   if (!isOpen) return null;
@@ -1352,9 +1354,9 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     setNodes(nodes.map(n => n.id === nodeId ? { ...n, text } : n));
   };
 
-  // Gestion des événements souris
+  // ========== GESTION SOURIS (Desktop) ==========
   const handleCanvasMouseDown = (e) => {
-    if (e.target === canvasRef.current || e.target.tagName === 'svg') {
+    if (e.target === canvasRef.current || e.target.tagName === 'svg' || e.target.tagName === 'line') {
       setIsPanning(true);
       setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
     }
@@ -1362,6 +1364,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
 
   const handleNodeMouseDown = (e, node) => {
     if (editingNode === node.id) return;
+    e.preventDefault();
     e.stopPropagation();
     const rect = canvasRef.current.getBoundingClientRect();
     setDragging({ 
@@ -1391,11 +1394,18 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     setIsPanning(false);
   };
 
-  // Gestion des événements tactiles (mobile)
+  // ========== GESTION TACTILE (Mobile) ==========
   const handleCanvasTouchStart = (e) => {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
-      if (e.target === canvasRef.current || e.target.tagName === 'svg') {
+      const target = e.target;
+      
+      // Si on touche le canvas, le SVG ou une ligne, activer le panning
+      if (target === canvasRef.current || 
+          target.tagName === 'svg' || 
+          target.tagName === 'line' ||
+          target.classList.contains('mindmap-connections')) {
+        e.preventDefault();
         setIsPanning(true);
         setPanStart({ 
           x: touch.clientX - offset.x, 
@@ -1407,11 +1417,27 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
 
   const handleNodeTouchStart = (e, node) => {
     if (editingNode === node.id) return;
+    
+    e.preventDefault();
     e.stopPropagation();
     
     const touch = e.touches[0];
-    const rect = canvasRef.current.getBoundingClientRect();
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
     
+    // Détection du double-tap (moins de 300ms entre deux taps)
+    if (tapLength < 300 && tapLength > 0) {
+      // Double-tap détecté : éditer le nœud
+      setEditingNode(node.id);
+      setLastTap(0);
+      if (tapTimeout) clearTimeout(tapTimeout);
+      return;
+    }
+    
+    // Simple tap : préparer le dragging
+    setLastTap(currentTime);
+    
+    const rect = canvasRef.current.getBoundingClientRect();
     setDragging({ 
       id: node.id, 
       offsetX: touch.clientX - rect.left - offset.x - node.x, 
@@ -1440,7 +1466,8 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
     setDragging(null);
     setIsPanning(false);
   };
@@ -1517,7 +1544,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
         
         <div className="mindmap-header">
           <h3 className="mindmap-title">
-            <img src="/img/mindmap.png" alt="Mind Map" /> Mind Map
+            <img src="img/mindmap.png" alt="Mind Map" /> Mind Map
           </h3>
           <button className="media-popup-close" onClick={onClose}>×</button>
         </div>
@@ -1555,8 +1582,10 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           style={{ 
-            cursor: isPanning ? 'grabbing' : 'grab',
-            touchAction: 'none'
+            cursor: isPanning ? 'grabbing' : (dragging ? 'grabbing' : 'grab'),
+            touchAction: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
           }}
         >
           <div style={{ 
@@ -1579,6 +1608,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
                     x2={node.x}
                     y2={node.y}
                     className="mindmap-line"
+                    style={{ pointerEvents: 'none' }}
                   />
                 );
               })}
@@ -1593,7 +1623,9 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
                   top: `${node.y}px`,
                   transform: 'translate(-50%, -50%)',
                   pointerEvents: 'auto',
-                  touchAction: 'none'
+                  touchAction: 'none',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none'
                 }}
                 onMouseDown={(e) => handleNodeMouseDown(e, node)}
                 onTouchStart={(e) => handleNodeTouchStart(e, node)}
@@ -1610,6 +1642,11 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
+                    style={{ 
+                      touchAction: 'auto',
+                      WebkitUserSelect: 'text',
+                      userSelect: 'text'
+                    }}
                   />
                 ) : (
                   node.text
@@ -1631,6 +1668,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
     </div>
   );
 }
+
 // ==================== MAIN CONTENT ====================
 function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   const [showSavePopup, setShowSavePopup] = React.useState(false);
@@ -1705,11 +1743,14 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
             media.style.cursor = 'move';
             media.style.maxWidth = '100%';
             media.style.height = 'auto';
+            media.style.touchAction = 'none';
             media.draggable = false;
 
-            let isResizing = false;
-            let startX, startY;
+            let isInteracting = false;
+            let startX, startY, startWidth;
+            let lastTouchDistance = 0;
 
+            // ========== GESTION SOURIS (Desktop) ==========
             media.addEventListener('wheel', (e) => {
               if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
@@ -1725,12 +1766,12 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
                 e.stopPropagation();
                 startX = e.clientX;
                 startY = e.clientY;
-                isResizing = true;
+                isInteracting = true;
               }
             });
 
             document.addEventListener('mousemove', (e) => {
-              if (isResizing) {
+              if (isInteracting) {
                 e.preventDefault();
                 e.stopPropagation();
                 const deltaX = e.clientX - startX;
@@ -1747,7 +1788,90 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
             });
 
             document.addEventListener('mouseup', () => {
-              isResizing = false;
+              isInteracting = false;
+            });
+
+            // ========== GESTION TACTILE (Mobile) ==========
+            
+            // Fonction pour calculer la distance entre deux doigts
+            const getTouchDistance = (touch1, touch2) => {
+              const dx = touch2.clientX - touch1.clientX;
+              const dy = touch2.clientY - touch1.clientY;
+              return Math.sqrt(dx * dx + dy * dy);
+            };
+
+            media.addEventListener('touchstart', (e) => {
+              e.stopPropagation();
+              
+              if (e.touches.length === 1) {
+                // Un seul doigt : déplacement
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                isInteracting = true;
+              } else if (e.touches.length === 2) {
+                // Deux doigts : redimensionnement (pinch)
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                lastTouchDistance = getTouchDistance(touch1, touch2);
+                startWidth = media.offsetWidth;
+                isInteracting = true;
+              }
+            });
+
+            media.addEventListener('touchmove', (e) => {
+              if (!isInteracting) return;
+
+              if (e.touches.length === 1) {
+                // Un seul doigt : déplacement
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                
+                if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                  media.style.position = 'relative';
+                  media.style.left = (parseFloat(media.style.left) || 0) + deltaX + 'px';
+                  media.style.top = (parseFloat(media.style.top) || 0) + deltaY + 'px';
+                  startX = touch.clientX;
+                  startY = touch.clientY;
+                }
+              } else if (e.touches.length === 2) {
+                // Deux doigts : redimensionnement (pinch)
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+                
+                if (lastTouchDistance > 0) {
+                  const scale = currentDistance / lastTouchDistance;
+                  const newWidth = startWidth * scale;
+                  
+                  // Limiter la taille min/max
+                  if (newWidth >= 50 && newWidth <= 1000) {
+                    media.style.width = newWidth + 'px';
+                  }
+                }
+                
+                lastTouchDistance = currentDistance;
+                startWidth = media.offsetWidth;
+              }
+            });
+
+            media.addEventListener('touchend', (e) => {
+              isInteracting = false;
+              lastTouchDistance = 0;
+              
+              // Si c'était un tap rapide (pas un drag), ne rien faire
+              if (e.changedTouches.length === 1 && !e.cancelable) {
+                e.stopPropagation();
+              }
+            });
+
+            media.addEventListener('touchcancel', () => {
+              isInteracting = false;
+              lastTouchDistance = 0;
             });
           }
         });
