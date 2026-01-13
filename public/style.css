@@ -1,0 +1,2490 @@
+/* ==================== GLOBAL ==================== */
+body {
+    background-color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* ==================== APP CONTAINER ==================== */
+.App {
+    display: flex;
+    flex-direction: column; 
+    min-height: 100vh; 
+}
+
+/* ==================== HEADER ==================== */
+.header {
+    background-color: #0d0d0d;
+    border-bottom: 1px solid #2a2a2a;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+}
+
+.logo {
+    height: 50px;
+    color: #6366f1;
+    font-size: 28px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-email {
+    color: #9ca3af;
+    font-size: 14px;
+    margin-right: 16px;
+}
+
+/* Navigation dans le header */
+.nav-button-header {
+    display: flex;
+    justify-content: flex-end; 
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none; 
+    gap: 10px; 
+}
+
+/* Style de base pour tous les boutons du header */
+.nav-button-header button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s; 
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Bouton "Créer un compte" */
+.createAccount {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    outline: 1px solid #ffffff; 
+}
+
+.createAccount:hover {
+    background-color: #4f46e5; 
+}
+
+/* Bouton "Se connecter" */
+.login {
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    outline: 1px solid #ffffff;
+}
+
+.login:hover {
+    background-color: #4f46e5;
+}
+
+/* Bouton "Déconnexion" */
+.disconnect {
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    outline: 1px solid #ffffff;
+}
+
+.disconnect:hover {
+    background-color: #b91c1c; 
+}
+
+/* Bouton "Paramètres" */
+.settings {
+    background-color: #404040; 
+    color: #e0e0e0;
+    padding: 8px;
+}
+
+.settings:hover {
+    background-color: #525252; 
+}
+
+.settings img {
+    height: 20px;
+    width: 20px;
+}
+
+/* Bouton "Profil" */
+.profil {
+    background-color: #404040;
+    color: #e0e0e0;
+    padding: 8px;
+}
+
+.profil:hover {
+    background-color: #525252;
+}
+
+.profil img {
+    height: 20px;
+    width: 20px;
+}
+
+/* ==================== CONTENT LAYOUT ==================== */
+.content {
+    display: flex;
+    flex: 1;
+}
+
+/* ==================== SIDEBAR ==================== */
+.leftContainer {
+    background-color: #0d0d0d; 
+    border-right: 1px solid #2a2a2a; 
+    padding: 20px;
+    width: 250px; 
+    min-height: calc(100vh - 60px);
+}
+
+/* Titre "Mes pages" */
+.notes-title {
+    color: #e0e0e0;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* ==================== BOUTONS D'AJOUT(note et folder) ==================== */
+.add-note {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    display: flex;
+    flex-direction: row; 
+    gap: 6px;
+}
+
+/* Même style pour les deux boutons*/
+.new-note-button,
+.add-new-directory {
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 32px;
+}
+
+/* Bouton "Nouvelle page"*/
+.new-note-button {
+    background-color: #6366f1; 
+    color: #ffffff;
+    border: none;
+}
+
+.new-note-button:hover {
+    background-color: #4f46e5; 
+    transform: translateY(-1px); 
+    box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3);
+}
+
+.new-note-button:active {
+    transform: translateY(0); 
+}
+
+/* Bouton "Nouveau dossier"*/
+.add-new-directory {
+    background-color: transparent;
+    color: #e0e0e0;
+    border: 1px solid #404040; 
+}
+
+.add-new-directory:hover {
+    background-color: #2a2a2a; 
+    border-color: #525252; 
+}
+
+/* Séparateur visuel après les boutons */
+.add-note + nav {
+    border-top: 1px solid #2a2a2a;
+    padding-top: 12px;
+}
+
+/* ==================== LISTE DES NOTES ==================== */
+.note-list {
+    list-style: none; 
+    padding: 0;
+    margin: 0;
+}
+
+/* Séparateur entre dossiers et notes */
+.separator {
+    height: 1px;
+    background-color: #2a2a2a;
+    margin: 16px 0;
+    list-style: none;
+}
+
+/* ==================== DOSSIERS DANS LA SIDEBAR ==================== */
+
+/* Bouton de dossier */
+.folder-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.folder-button:hover {
+    background-color: #333333;
+    border-color: #525252;
+    transform: translateX(2px);
+}
+
+.folder-button.selected {
+    background-color: #6366f1;
+    border-color: #6366f1;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.folder-button.selected:hover {
+    background-color: #4f46e5;
+}
+
+/* Contenu du dossier */
+.folder-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Wrapper de l'icône du dossier */
+.folder-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(99, 102, 241, 0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.folder-button.selected .folder-icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.folder-icon-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+/* Info du dossier (nom + nombre de notes) */
+.folder-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.folder-name {
+    color: #e0e0e0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.folder-count {
+    color: #9ca3af;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.folder-button.selected .folder-name {
+    color: #ffffff;
+}
+
+.folder-button.selected .folder-count {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* État vide */
+.empty-state {
+    color: #6b7280;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+.mainContent {
+    flex: 1; 
+    padding: 20px;
+    background-color: #1a1a1a; 
+}
+
+/* ==================== NOTES DANS LA SIDEBAR ==================== */
+
+/* Container de chaque note */
+.note-item {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+/* Le bouton de la note */
+.note-button {
+    width: 100%;
+    text-align: left;
+    padding: 12px;
+    background-color: #2a2a2a;  
+    color: #e0e0e0;  
+    border: none;
+    border-radius: 6px; 
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Au survol de la note */
+.note-button:hover {
+    background-color: #4f46e5;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+}
+
+/* Quand la note est sélectionnée */
+.note-button.selected {
+    background-color: #6366f1;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+/* Le titre de la note */
+.note-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* La date de création */
+.note-date {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* Bouton de suppression */
+.delete-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+/* ==================== ÉDITEUR DE NOTES ==================== */
+
+/* Container principal */
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Zone du titre */
+.editor-header {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+/* Bouton de sauvegarde */
+.save-button {
+    background-color: #6366f1;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+.save-button:hover {
+    background-color: #4f46e5;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);  
+}
+
+/* Input du titre */
+.title-input {
+    width: 100%;
+    font-size: 32px;
+    font-weight: bold;
+    color: #e0e0e0;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+/* Zone de texte pour le contenu */
+.content-textarea {
+    width: 100%;
+    flex: 1;
+    background-color: transparent;
+    color: #e0e0e0;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 16px;  
+    line-height: 1.6;
+    font-family: inherit;
+}
+
+/* Placeholder (texte grisé) */
+.content-textarea::placeholder,
+.title-input::placeholder {
+    color: #6b7280;  
+}
+
+/* ==================== POPUP DE BASE ==================== */
+
+/* Fond sombre derrière le popup */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+/* Container du popup */
+.popup-container {
+    background-color: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Titre du popup */
+.popup-title {
+    color: #e0e0e0;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 0 12px 0;
+}
+
+/* Texte du popup */
+.popup-text {
+    color: #9ca3af;
+    font-size: 14px;
+    margin: 0 0 20px 0;
+}
+
+/* Input dans le popup */
+.popup-input {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 14px;
+    margin-bottom: 20px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.popup-input:focus {
+    border-color: #6366f1;
+}
+
+/* Container des boutons */
+.popup-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Bouton Annuler */
+.popup-cancel {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.popup-cancel:hover {
+    background-color: #404040;
+}
+
+/* Bouton Confirmer/Créer */
+.popup-confirm {
+    background-color: #6366f1;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.popup-confirm:hover:not(:disabled) {
+    background-color: #4f46e5;
+}
+
+.popup-confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Bouton Supprimer (rouge) */
+.popup-delete {
+    background-color: #ef4444;
+}
+
+.popup-delete:hover {
+    background-color: #dc2626;
+}
+
+/* ==================== AUTH POPUP ==================== */
+.auth-popup-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-popup-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #2a2a2a;
+    text-align: center;
+}
+
+.auth-popup-title {
+    color: #e0e0e0;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.auth-popup-body {
+    padding: 24px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auth-label {
+    color: #9ca3af;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.auth-input:focus {
+    border-color: #6366f1;
+}
+
+.auth-error {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.auth-popup-footer {
+    padding: 20px 24px;
+    border-top: 1px solid #2a2a2a;
+    background-color: #0d0d0d;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.auth-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: #6366f1;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-submit:hover:not(:disabled) {
+    background-color: #4f46e5;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.auth-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-switch {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.auth-switch-link {
+    color: #6366f1;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.auth-switch-link:hover {
+    text-decoration: underline;
+}
+
+/* ==================== POPUP DE SAUVEGARDE ==================== */
+
+/* Container principal de la popup de sauvegarde */
+.save-popup-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Header de la popup */
+.save-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.save-popup-title {
+    color: #e0e0e0;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.save-popup-close {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 28px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.save-popup-close:hover {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+
+/* Corps de la popup */
+.save-popup-body {
+    padding: 24px;
+}
+
+/* Info de la note à sauvegarder */
+.save-note-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    border: 1px solid #404040;
+}
+
+.save-note-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #6366f1;
+    border-radius: 8px;
+}
+
+.save-note-name {
+    flex: 1;
+    color: #e0e0e0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Section de sélection de dossier */
+.save-section {
+    margin-bottom: 24px;
+}
+
+.save-label {
+    display: block;
+    color: #9ca3af;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+/* Liste des dossiers */
+.folder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.folder-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.folder-list::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 3px;
+}
+
+.folder-list::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 3px;
+}
+
+.folder-list::-webkit-scrollbar-thumb:hover {
+    background: #525252;
+}
+
+/* Option de dossier */
+.folder-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.folder-option:hover {
+    background-color: #333333;
+    border-color: #525252;
+    transform: translateX(2px);
+}
+
+.folder-option.selected {
+    background-color: #6366f1;
+    border-color: #6366f1;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.folder-option.selected:hover {
+    background-color: #4f46e5;
+    transform: translateX(2px);
+}
+
+.folder-option-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.check-icon {
+    margin-left: auto;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Bouton créer un nouveau dossier */
+.create-folder-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background-color: transparent;
+    border: 2px dashed #404040;
+    border-radius: 8px;
+    color: #9ca3af;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.create-folder-btn:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.create-folder-btn span:first-child {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Input pour créer un nouveau dossier */
+.new-folder-input-container {
+    padding: 16px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    border: 1px solid #404040;
+}
+
+.new-folder-input {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #1a1a1a;
+    border: 1px solid #404040;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.new-folder-input:focus {
+    border-color: #6366f1;
+}
+
+.new-folder-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.new-folder-cancel,
+.new-folder-create {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.new-folder-cancel {
+    background-color: transparent;
+    color: #9ca3af;
+    border: 1px solid #404040;
+}
+
+.new-folder-cancel:hover {
+    background-color: #2a2a2a;
+}
+
+.new-folder-create {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.new-folder-create:hover:not(:disabled) {
+    background-color: #4f46e5;
+}
+
+.new-folder-create:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Footer de la popup */
+.save-popup-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 20px 24px;
+    border-top: 1px solid #2a2a2a;
+    background-color: #0d0d0d;
+}
+
+.save-popup-cancel,
+.save-popup-confirm {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.save-popup-cancel {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+}
+
+.save-popup-cancel:hover {
+    background-color: #404040;
+}
+
+.save-popup-confirm {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.save-popup-confirm:hover {
+    background-color: #4f46e5;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+}
+
+/* ==================== NOTIFICATION DE SUCCÈS ==================== */
+.success-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 2000;
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-content {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+}
+
+.success-icon {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.success-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ==================== TOOL BAR ==================== */
+
+.tool-bar {
+    background-color: #0d0d0d;
+    position: fixed;
+    bottom: 20px;
+    left: 310px;
+    right: 20px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    border-radius: 50px;
+    padding: 8px 20px;
+    border: 1px solid #2a2a2a;
+}
+
+.tool-bar-list {
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    gap: 44px;
+    margin: 0;
+    padding: 0;
+}
+
+.tool-bar-list li button {
+    background-color: transparent;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* État actif des boutons - BLEU DU THÈME */
+.tool-bar-list li button.active {
+    background-color: #6366f1;
+}
+
+.tool-bar-list li button.active:hover {
+    background-color: #4f46e5;
+}
+
+.tool-bar-list li button img {
+    width: 24px;
+    height: 24px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.tool-bar-list li button:hover {
+    background-color: #2a2a2a;
+}
+
+.tool-bar-list li button:hover img {
+    opacity: 1;
+}
+
+.tool-bar-list li button.active img {
+    opacity: 1;
+}
+
+
+/* ==================== MEDIA POPUP (IMAGE/VIDEO) ==================== */
+.media-popup-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+.media-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.media-popup-title {
+    color: #e0e0e0;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.media-popup-close {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 28px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.media-popup-close:hover {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+
+.media-popup-body {
+    padding: 24px;
+}
+
+.media-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background-color: #2a2a2a;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.media-tab {
+    flex: 1;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.media-tab.active {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.media-tab:hover:not(.active) {
+    background-color: #404040;
+    color: #e0e0e0;
+}
+
+.media-tab-content {
+    display: none;
+}
+
+.media-tab-content.active {
+    display: block;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.7;
+}
+
+.upload-icon img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.upload-zone {
+    border: 2px dashed #404040;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #2a2a2a;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+}
+
+.upload-zone:hover {
+    border-color: #6366f1;
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.upload-zone.dragover {
+    border-color: #6366f1;
+    background-color: rgba(99, 102, 241, 0.1);
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.7;
+}
+
+.upload-text {
+    color: #e0e0e0;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.upload-subtext {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.upload-input {
+    display: none;
+}
+
+.url-input-container {
+    margin-top: 16px;
+}
+
+.url-input-label {
+    display: block;
+    color: #9ca3af;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.url-input {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.url-input:focus {
+    border-color: #6366f1;
+}
+
+.preview-container {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    border: 1px solid #404040;
+}
+
+.preview-label {
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.preview-image,
+.preview-video {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto;
+}
+
+.preview-filename {
+    color: #e0e0e0;
+    font-size: 14px;
+    margin-top: 8px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.media-popup-footer {
+    padding: 20px 24px;
+    border-top: 1px solid #2a2a2a;
+    background-color: #0d0d0d;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.media-popup-cancel,
+.media-popup-insert {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.media-popup-cancel {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+}
+
+.media-popup-cancel:hover {
+    background-color: #404040;
+}
+
+.media-popup-insert {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.media-popup-insert:hover:not(:disabled) {
+    background-color: #4f46e5;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+}
+
+.media-popup-insert:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ==================== QUILL EDITOR CUSTOMIZATION ==================== */
+
+/* Container principal de l'éditeur */
+.ql-container {
+    font-family: inherit !important;
+    font-size: 16px !important;
+    color: #e0e0e0 !important;
+}
+
+/* Zone de texte */
+.ql-editor {
+    background-color: transparent !important;
+    color: #e0e0e0 !important;
+    padding: 0 !important;
+    min-height: 300px !important;
+}
+
+/* Placeholder */
+.ql-editor.ql-blank::before {
+    color: #6b7280 !important;
+    content: 'Commencez à écrire...' !important;
+    font-style: normal !important;
+}
+
+/* Titres */
+.ql-editor h1 {
+    font-size: 2em !important;
+    font-weight: bold !important;
+    color: #e0e0e0 !important;
+}
+
+.ql-editor h2 {
+    font-size: 1.5em !important;
+    font-weight: bold !important;
+    color: #e0e0e0 !important;
+}
+
+.ql-editor h3 {
+    font-size: 1.17em !important;
+    font-weight: bold !important;
+    color: #e0e0e0 !important;
+}
+
+/* Listes */
+.ql-editor ul, .ql-editor ol {
+    padding-left: 1.5em !important;
+    color: #e0e0e0 !important;
+}
+
+.ql-editor li {
+    color: #e0e0e0 !important;
+}
+
+/* Retirer les bordures par défaut de Quill */
+.ql-container.ql-snow {
+    border: none !important;
+}
+
+.ql-toolbar.ql-snow {
+    display: none !important;
+}
+
+/* ==================== BOUTON DE SUPPRESSION DE DOSSIER ==================== */
+
+/* Bouton de suppression du dossier - même style que pour les notes */
+.delete-folder-button {
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    cursor: pointer;
+    padding: 16px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    opacity: 0;
+    margin-left: auto;
+}
+
+
+.folder-button:hover .delete-folder-button {
+    opacity: 1;
+}
+
+.delete-folder-button:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.delete-folder-button img {
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+}
+
+
+.folder-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+
+.folder-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0; 
+}
+
+/* ==================== MIND MAP POPUP ==================== */
+
+/* Container principal de la popup mindmap */
+.mindmap-popup-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    width: 90vw;
+    max-width: 1200px;
+    height: 85vh;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header de la popup mindmap */
+.mindmap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.mindmap-title {
+    color: #e0e0e0;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Barre d'outils minimaliste */
+.mindmap-toolbar {
+    padding: 16px 24px;
+    border-bottom: 1px solid #2a2a2a;
+    background-color: #0d0d0d;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.mindmap-btn {
+    padding: 8px 16px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mindmap-btn:hover:not(:disabled) {
+    background-color: #404040;
+    border-color: #525252;
+}
+
+.mindmap-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.mindmap-btn-primary {
+    background-color: #6366f1;
+    border-color: #6366f1;
+}
+
+.mindmap-btn-primary:hover:not(:disabled) {
+    background-color: #4f46e5;
+}
+
+.mindmap-btn-danger {
+    background-color: transparent;
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.mindmap-btn-danger:hover:not(:disabled) {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.mindmap-hint {
+    margin-left: auto;
+    color: #6b7280;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Canvas de la mindmap */
+.mindmap-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: #0d0d0d;
+    background-image: 
+        radial-gradient(circle, #2a2a2a 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+/* Nœuds de la mindmap - VERSION MINIMALISTE */
+.mindmap-node {
+    position: absolute;
+    min-width: 120px;
+    max-width: 200px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    cursor: grab;
+    transition: transform 0.2s;
+    user-select: none;
+    word-wrap: break-word;
+}
+
+.mindmap-node:active {
+    cursor: grabbing;
+}
+
+.mindmap-node:hover {
+    transform: scale(1.02);
+}
+
+.mindmap-node.selected {
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
+}
+
+.mindmap-node.central {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 16px 20px;
+    min-width: 150px;
+}
+
+/* Input d'édition de nœud */
+.mindmap-node-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    outline: none;
+    font-family: inherit;
+}
+
+.mindmap-node.central .mindmap-node-input {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Lignes de connexion SVG */
+.mindmap-connections {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.mindmap-line {
+    stroke: #525252;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* Footer de la popup */
+.mindmap-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 20px 24px;
+    border-top: 1px solid #2a2a2a;
+    background-color: #0d0d0d;
+}
+
+.mindmap-footer button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.mindmap-cancel {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+}
+
+.mindmap-cancel:hover {
+    background-color: #404040;
+}
+
+.mindmap-insert {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.mindmap-insert:hover {
+    background-color: #4f46e5;
+}
+
+/* Variantes de couleurs pour les nœuds enfants */
+.mindmap-node.color-1 {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.mindmap-node.color-2 {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.mindmap-node.color-3 {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.mindmap-node.color-4 {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.mindmap-node.color-5 {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* Animation d'apparition */
+@keyframes nodeAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.mindmap-node {
+    animation: nodeAppear 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .mindmap-popup-container {
+        width: 95vw;
+        height: 90vh;
+    }
+    
+    .mindmap-toolbar {
+        flex-wrap: wrap;
+    }
+    
+    .mindmap-hint {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 8px;
+    }
+}
+
+/* ==================== MODE CLAIR ==================== */
+body.light-mode {
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+body.light-mode .header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+body.light-mode .leftContainer {
+    background-color: #f8f9fa;
+    border-right: 1px solid #e5e7eb;
+}
+
+body.light-mode .mainContent {
+    background-color: #ffffff;
+}
+
+body.light-mode .notes-title,
+body.light-mode .note-title,
+body.light-mode .folder-name,
+body.light-mode .title-input,
+body.light-mode .ql-editor {
+    color: #1a1a1a !important;
+}
+
+body.light-mode .note-date,
+body.light-mode .folder-count {
+    color: #6b7280;
+}
+
+body.light-mode .note-button {
+    background-color: #f3f4f6;
+    color: #1a1a1a;
+}
+
+body.light-mode .note-button:hover {
+    background-color: #4f46e5;
+    color: #ffffff;
+}
+
+body.light-mode .note-button.selected {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+body.light-mode .folder-button {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+}
+
+body.light-mode .folder-button:hover {
+    background-color: #e5e7eb;
+}
+
+body.light-mode .folder-button.selected {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+body.light-mode .folder-button.selected .folder-name,
+body.light-mode .folder-button.selected .folder-count {
+    color: #ffffff;
+}
+
+body.light-mode .new-note-button {
+    background-color: #6366f1;
+}
+
+body.light-mode .add-new-directory {
+    background-color: transparent;
+    border-color: #e5e7eb;
+    color: #1a1a1a;
+}
+
+body.light-mode .add-new-directory:hover {
+    background-color: #f3f4f6;
+}
+
+body.light-mode .tool-bar {
+    background-color: #f8f9fa;
+    border-color: #e5e7eb;
+}
+
+body.light-mode .tool-bar-list li button:hover {
+    background-color: #e5e7eb;
+}
+
+body.light-mode .popup-container,
+body.light-mode .save-popup-container,
+body.light-mode .media-popup-container,
+body.light-mode .mindmap-popup-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-color: #e5e7eb;
+}
+
+body.light-mode .popup-title,
+body.light-mode .popup-text,
+body.light-mode .save-popup-title {
+    color: #1a1a1a;
+}
+
+body.light-mode .popup-input {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #1a1a1a;
+}
+
+body.light-mode .ql-editor.ql-blank::before {
+    color: #9ca3af !important;
+}
+
+/* ==================== CORRECTIONS MODE CLAIR - TEXTES ==================== */
+
+/* Email dans le header */
+body.light-mode .nav-button-header li {
+    color: #6b7280 !important;
+}
+
+/* Placeholder de l'éditeur */
+body.light-mode .ql-editor.ql-blank::before {
+    color: #9ca3af !important;
+    opacity: 0.6;
+}
+
+/* Texte dans l'éditeur */
+body.light-mode .ql-editor p,
+body.light-mode .ql-editor span,
+body.light-mode .ql-editor div {
+    color: #1a1a1a !important;
+}
+
+/* Tous les paragraphes de l'éditeur */
+body.light-mode #editor * {
+    color: #1a1a1a !important;
+}
+
+body.light-mode #editor h1,
+body.light-mode #editor h2,
+body.light-mode #editor h3 {
+    color: #1a1a1a !important;
+}
+
+/* Date des notes */
+body.light-mode .note-date {
+    color: #9ca3af !important;
+}
+
+/* État vide */
+body.light-mode .empty-state {
+    color: #9ca3af;
+}
+
+/* Popup text */
+body.light-mode .popup-text {
+    color: #6b7280 !important;
+}
+
+/* Séparateur */
+body.light-mode .separator {
+    background-color: #e5e7eb;
+}
+
+/* Bordure editor header */
+body.light-mode .editor-header {
+    border-bottom-color: #e5e7eb;
+}
+
+/* Note content wrapper */
+body.light-mode .note-content {
+    color: #1a1a1a;
+}
+
+body.light-mode .note-title-wrapper {
+    color: #1a1a1a;
+}
+
+/* Forcer la couleur du contenu Quill */
+body.light-mode .ql-container {
+    color: #1a1a1a !important;
+}
+
+body.light-mode .ql-editor {
+    color: #1a1a1a !important;
+}
+
+body.light-mode .ql-editor * {
+    color: inherit !important;
+}
+
+/* Logo */
+body.light-mode .logo {
+    filter: brightness(0.3);
+}
+
+/* ==================== TOOLBAR EN MODE CLAIR ==================== */
+
+/* Barre d'outils générale */
+body.light-mode .tool-bar {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Boutons de la toolbar */
+body.light-mode .tool-bar-list li button {
+    background-color: transparent;
+}
+
+body.light-mode .tool-bar-list li button:hover {
+    background-color: #e5e7eb;
+}
+
+/* Bouton actif */
+body.light-mode .tool-bar-list li button.active {
+    background-color: #6366f1;
+}
+
+body.light-mode .tool-bar-list li button.active:hover {
+    background-color: #4f46e5;
+}
+
+/* Images dans les boutons - inverser les couleurs pour qu'elles soient visibles */
+body.light-mode .tool-bar-list li button img {
+    filter: brightness(0) saturate(100%);
+    opacity: 0.7;
+}
+
+body.light-mode .tool-bar-list li button:hover img {
+    opacity: 1;
+}
+
+/* Images dans les boutons actifs - garder blanc */
+body.light-mode .tool-bar-list li button.active img {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+}
+
+/* ==================== BOUTONS HEADER EN MODE CLAIR ==================== */
+
+/* Bouton "Créer un compte" */
+body.light-mode .createAccount {
+    background-color: transparent;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    outline: 1px solid #1a1a1a;
+}
+
+body.light-mode .createAccount:hover {
+    background-color: #4f46e5;
+    color: #ffffff;
+    border-color: #4f46e5;
+    outline-color: #4f46e5;
+}
+
+/* Bouton "Se connecter" */
+body.light-mode .login {
+    background-color: transparent;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    outline: 1px solid #1a1a1a;
+}
+
+body.light-mode .login:hover {
+    background-color: #4f46e5;
+    color: #ffffff;
+    border-color: #4f46e5;
+    outline-color: #4f46e5;
+}
+
+/* Bouton "Déconnexion" */
+body.light-mode .disconnect {
+    background-color: transparent;
+    color: #1a1a1a;
+    border: 1px solid #1a1a1a;
+    outline: 1px solid #1a1a1a;
+}
+
+body.light-mode .disconnect:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    outline-color: #dc2626;
+}
+
+/* Email de l'utilisateur */
+body.light-mode .nav-button-header li[style*="color"] {
+    color: #6b7280 !important;
+}
+
+/* ==================== BOUTONS SUPPRIMER EN MODE CLAIR ==================== */
+
+/* Images des boutons supprimer */
+body.light-mode .delete-button img,
+body.light-mode .delete-folder-button img {
+    filter: brightness(0) saturate(100%);
+    opacity: 0.6;
+}
+
+/* Au survol */
+body.light-mode .delete-button:hover img,
+body.light-mode .delete-folder-button:hover img {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(98%) saturate(7471%) hue-rotate(356deg) brightness(91%) contrast(112%);
+    opacity: 1;
+}
+
+/* Visibilité au survol de la note/dossier */
+body.light-mode .note-button:hover .delete-button,
+body.light-mode .folder-button:hover .delete-folder-button {
+    opacity: 1;
+}
+
+/* Bouton "Nouveau dossier" */
+body.light-mode .add-new-directory {
+    background-color: transparent;
+    color: #1a1a1a;
+    border: 1px solid #d1d5db;
+}
+
+body.light-mode .add-new-directory:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Image dans le bouton */
+body.light-mode .add-new-directory img {
+    filter: brightness(0) saturate(100%);
+    opacity: 0.7;
+}
+
+body.light-mode .add-new-directory:hover img {
+    opacity: 1;
+}
+
+/* ==================== POPUP ENREGISTRER EN MODE CLAIR ==================== */
+
+/* Container du popup */
+body.light-mode .save-popup-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-color: #e5e7eb;
+}
+
+/* Header */
+body.light-mode .save-popup-header {
+    border-bottom-color: #e5e7eb;
+}
+
+body.light-mode .save-popup-title {
+    color: #1a1a1a;
+}
+
+body.light-mode .save-popup-close {
+    color: #6b7280;
+}
+
+body.light-mode .save-popup-close:hover {
+    background-color: #e5e7eb;
+    color: #1a1a1a;
+}
+
+/* Info de la note */
+body.light-mode .save-note-info {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+}
+
+body.light-mode .save-note-icon {
+    background-color: #6366f1;
+}
+
+body.light-mode .save-note-name {
+    color: #1a1a1a;
+}
+
+/* Label */
+body.light-mode .save-label {
+    color: #6b7280;
+}
+
+/* Liste des dossiers */
+body.light-mode .folder-list {
+    scrollbar-color: #d1d5db #f8f9fa;
+}
+
+/* Options de dossier */
+body.light-mode .folder-option {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #1a1a1a;
+}
+
+body.light-mode .folder-option:hover {
+    background-color: #e5e7eb;
+    border-color: #d1d5db;
+}
+
+body.light-mode .folder-option.selected {
+    background-color: #6366f1;
+    border-color: #6366f1;
+    color: #ffffff;
+}
+
+body.light-mode .folder-option.selected span {
+    color: #ffffff;
+}
+
+body.light-mode .folder-option span {
+    color: #1a1a1a;
+}
+
+/* Icône check */
+body.light-mode .check-icon {
+    color: #ffffff;
+}
+
+/* Bouton créer dossier */
+body.light-mode .create-folder-btn {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+body.light-mode .create-folder-btn:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Container input nouveau dossier */
+body.light-mode .new-folder-input-container {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+}
+
+body.light-mode .new-folder-input {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #1a1a1a;
+}
+
+body.light-mode .new-folder-input:focus {
+    border-color: #6366f1;
+}
+
+/* Boutons actions nouveau dossier */
+body.light-mode .new-folder-cancel {
+    background-color: transparent;
+    color: #6b7280;
+    border-color: #d1d5db;
+}
+
+body.light-mode .new-folder-cancel:hover {
+    background-color: #e5e7eb;
+}
+
+body.light-mode .new-folder-create {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+body.light-mode .new-folder-create:hover:not(:disabled) {
+    background-color: #4f46e5;
+}
+
+/* Footer */
+body.light-mode .save-popup-footer {
+    background-color: #f8f9fa;
+    border-top-color: #e5e7eb;
+}
+
+body.light-mode .save-popup-cancel {
+    background-color: #e5e7eb;
+    color: #1a1a1a;
+    border-color: #d1d5db;
+}
+
+body.light-mode .save-popup-cancel:hover {
+    background-color: #d1d5db;
+}
+
+body.light-mode .save-popup-confirm {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+body.light-mode .save-popup-confirm:hover {
+    background-color: #4f46e5;
+}
+
+/* Images des icônes de dossier */
+body.light-mode .folder-option-icon {
+    filter: brightness(0.4);
+}
+
+body.light-mode .folder-option.selected .folder-option-icon {
+    filter: brightness(0) invert(1);
+}
+
+
+/* ==================== BOUTON PROFIL AVEC LA PP GOOGLE ==================== */
+.profil {
+    width: 45px;       /* Même hauteur que les autres boutons */
+    height: 45px;
+    padding: 0;
+    margin-left: 8px;  /* Espacement avec le bouton précédent */
+    border: 2px solid #ffffff;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.profil img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.profil:hover {
+    transform: scale(1.1);
+    transition: all 0.2s;
+    border-color: #6366f1;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+/* 1. TOOLBAR - Scroll horizontal sur mobile */
+@media screen and (max-width: 768px) {
+  .tool-bar {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    padding: 8px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .tool-bar-list {
+    gap: 20px;
+    justify-content: flex-start;
+    flex-wrap: nowrap; /* Important : ne pas revenir à la ligne */
+    min-width: max-content; /* S'adapte au contenu */
+  }
+  
+  /* Cacher la scrollbar mais garder la fonctionnalité */
+  .tool-bar::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .tool-bar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .tool-bar::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 3px;
+  }
+}
+
+/* 2. MENU BURGER pour afficher la sidebar sur mobile */
+.menu-burger {
+  display: none; /* Caché par défaut sur desktop */
+}
+
+@media screen and (max-width: 768px) {
+  /* Afficher le bouton burger */
+  .menu-burger {
+    display: block;
+    position: fixed;
+    top: 70px; /* Sous le header */
+    left: 15px;
+    z-index: 1001;
+    background-color: #6366f1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s;
+  }
+  
+  .menu-burger:hover {
+    background-color: #4f46e5;
+    transform: scale(1.05);
+  }
+  
+  .menu-burger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #ffffff;
+    margin: 5px 0;
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+  
+  /* Animation du burger quand ouvert */
+  .menu-burger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+  }
+  
+  .menu-burger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .menu-burger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+  }
+  
+  /* Sidebar cachée par défaut */
+  .leftContainer {
+    position: fixed;
+    top: 60px; /* Sous le header */
+    left: -100%;
+    width: 80%;
+    max-width: 300px;
+    height: calc(100vh - 60px);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+  }
+  
+  /* Sidebar ouverte */
+  .leftContainer.open {
+    left: 0;
+  }
+  
+  /* Overlay sombre quand sidebar ouverte */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+  }
+  
+  .sidebar-overlay.show {
+    display: block;
+  }
+  
+  /* Main content prend toute la largeur */
+  .mainContent {
+    width: 100%;
+    padding: 10px;
+    margin-top: 50px; /* Place pour le bouton burger */
+    padding-bottom: 80px; /* Place pour la toolbar */
+  }
+  
+  /* Editor */
+  .editor-container {
+    height: calc(100vh - 200px); /* Ajuster la hauteur */
+  }
+}
+
+/* Mode clair pour le burger */
+body.light-mode .menu-burger {
+  background-color: #6366f1;
+}
+
+body.light-mode .menu-burger:hover {
+  background-color: #4f46e5;
+}
+
+body.light-mode .sidebar-overlay {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* ==================== EXPORT PDF ==================== */
+.export-pdf {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.export-pdf:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.export-pdf img {
+  width: 24px;
+  height: 24px;
+}
