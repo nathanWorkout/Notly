@@ -15,7 +15,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ==================== COMPOSANT APP PRINCIPAL ====================
-// ==================== COMPOSANT APP PRINCIPAL ====================
 function App() {
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -135,7 +134,7 @@ function App() {
   };
 
   const deleteNote = async (id) => {
-    // Si c'est une note temporaire, la supprimer directement de l'état
+    
     if (id.toString().startsWith('temp-')) {
       setNotes(notes.filter(n => n.id !== id));
       if (selectedNote?.id === id) {
@@ -349,7 +348,7 @@ function OfflineWarningPopup({ onClose, onContinue }) {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            💡 Connectez-vous pour sauvegarder vos notes de façon permanente !
+            Connectez-vous pour sauvegarder vos notes de façon permanente !
           </p>
         </div>
 
@@ -403,6 +402,164 @@ function Header({ user }) {
     document.body.classList.toggle('light-mode');
   };
 
+const handleExportPDF = async () => {
+  const editorElement = document.querySelector('#editor .ql-editor');
+  const titleElement = document.querySelector('.title-input');
+  
+  if (!editorElement || !editorElement.textContent.trim()) {
+    alert('Aucune note à exporter');
+    return;
+  }
+
+  try {
+    // Créer conteneur temporaire pour le rendu DOM
+    const container = document.createElement('div');
+    container.style.cssText = `
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      background: white;
+      font-family: Arial, sans-serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #000000;
+    `;
+
+    // Titre de la note
+    const title = titleElement ? titleElement.value : 'Note sans titre';
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = `
+      color: #000000;
+      font-size: 24pt;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #6366f1;
+      padding-bottom: 10px;
+    `;
+    titleDiv.textContent = title;
+    container.appendChild(titleDiv);
+
+    // Créer le contenu en parcourant le DOM de Quill
+    const contentDiv = document.createElement('div');
+    contentDiv.style.cssText = 'color: #000000;';
+    
+    // Fonction pour copier le contenu
+    const copyNode = (source, target) => {
+      source.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          target.appendChild(document.createTextNode(node.textContent));
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          let newElement;
+          const tagName = node.tagName.toLowerCase();
+          
+          
+          if (tagName === 'strong' || tagName === 'b') {
+            newElement = document.createElement('strong');
+            newElement.style.fontWeight = 'bold';
+            newElement.style.color = '#000000';
+          } else if (tagName === 'em' || tagName === 'i') {
+            newElement = document.createElement('em');
+            newElement.style.fontStyle = 'italic';
+            newElement.style.color = '#000000';
+          } else if (tagName === 'u') {
+            newElement = document.createElement('u');
+            newElement.style.textDecoration = 'underline';
+            newElement.style.color = '#000000';
+          } else if (tagName === 's' || tagName === 'strike' || tagName === 'del') {
+            newElement = document.createElement('s');
+            newElement.style.textDecoration = 'line-through';
+            newElement.style.color = '#000000';
+          } else if (tagName === 'h1') {
+            newElement = document.createElement('h1');
+            newElement.style.cssText = 'font-size: 20pt; font-weight: bold; margin: 15px 0 10px 0; color: #000000;';
+          } else if (tagName === 'h2') {
+            newElement = document.createElement('h2');
+            newElement.style.cssText = 'font-size: 16pt; font-weight: bold; margin: 12px 0 8px 0; color: #000000;';
+          } else if (tagName === 'h3') {
+            newElement = document.createElement('h3');
+            newElement.style.cssText = 'font-size: 14pt; font-weight: bold; margin: 10px 0 6px 0; color: #000000;';
+          } else if (tagName === 'ul') {
+            newElement = document.createElement('ul');
+            newElement.style.cssText = 'margin: 10px 0; padding-left: 30px; color: #000000;';
+          } else if (tagName === 'ol') {
+            newElement = document.createElement('ol');
+            newElement.style.cssText = 'margin: 10px 0; padding-left: 30px; color: #000000;';
+          } else if (tagName === 'li') {
+            newElement = document.createElement('li');
+            newElement.style.cssText = 'margin: 5px 0; color: #000000;';
+          } else if (tagName === 'p') {
+            newElement = document.createElement('p');
+            newElement.style.cssText = 'margin: 10px 0; color: #000000;';
+          } else if (tagName === 'img') {
+            newElement = document.createElement('img');
+            newElement.src = node.src;
+            newElement.style.cssText = 'max-width: 100%; height: auto; margin: 15px 0; display: block;';
+          } else if (tagName === 'br') {
+            newElement = document.createElement('br');
+          } else {
+            newElement = document.createElement('span');
+            newElement.style.color = '#000000';
+          }
+          
+          // Copier récursivement les childs
+          copyNode(node, newElement);
+          target.appendChild(newElement);
+        }
+      });
+    };
+    
+    copyNode(editorElement, contentDiv);
+    container.appendChild(contentDiv);
+    document.body.appendChild(container);
+
+    // Attendre le rendu
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+ 
+    const canvas = await window.html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+
+    // Créer le PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pageHeight = 297;
+    
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${title}.pdf`);
+
+    // Nettoyer
+    document.body.removeChild(container);
+
+  } catch (error) {
+    console.error('Erreur export PDF:', error);
+    alert('Erreur lors de l\'export : ' + error.message);
+  }
+};
+
   return (
     <>
       <header className="header">
@@ -449,7 +606,12 @@ function Header({ user }) {
                 </li>
               </>
             )}
-            
+
+            <li>
+              <button 
+                className="export-pdf" onClick={handleExportPDF}title="Exporter en PDF"><img src="img/pdf.png" alt="Export PDF" />
+              </button>
+            </li>
             <li>
               <button className="settings" onClick={() => setShowSettingsPopup(true)}>
                 <img src="img/settings.png" alt="Paramètres" />
@@ -1669,7 +1831,7 @@ function MindMapPopup({ isOpen, onClose, onInsert }) {
   );
 }
 
-// ==================== MAIN CONTENT ====================
+// ==================== MAIN CONTENT - VERSION CORRIGÉE ====================
 function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
   const [showSavePopup, setShowSavePopup] = React.useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = React.useState(false);
@@ -1703,7 +1865,9 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
     onUpdateNote(selectedNote.id, 'title', newTitle);
   };
 
+  // ========== UN SEUL useEffect POUR QUILL ==========
   React.useEffect(() => {
+    // Nettoyer l'ancien éditeur
     if (quillRef.current) {
       quillRef.current = null;
       const editorElement = document.getElementById('editor');
@@ -1720,7 +1884,12 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         }
       });
 
-      quill.root.innerHTML = selectedNote.content || '';
+      quill.root.setAttribute('spellcheck', 'false');
+
+      // Charger le contenu AVEC les styles inline préservés
+      if (selectedNote.content) {
+        quill.root.innerHTML = selectedNote.content;
+      }
 
       quill.on('text-change', () => {
         onUpdateNote(selectedNote.id, 'content', quill.root.innerHTML);
@@ -1748,177 +1917,249 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         const videos = quill.root.querySelectorAll('video');
         
         [...images, ...videos].forEach(media => {
-          if (!media.classList.contains('resizable')) {
+          const wasResizable = media.classList.contains('resizable');
+          
+          if (!wasResizable) {
             media.classList.add('resizable');
-            media.style.cursor = 'move';
-            media.style.maxWidth = '100%';
-            media.style.height = 'auto';
-            media.style.touchAction = 'none';
-            media.draggable = false;
+          }
+          
+          media.style.cursor = 'default';
+          media.style.touchAction = 'auto';
+          media.draggable = false;
+          media.style.height = 'auto';
+          media.style.maxWidth = '100%';
+          media.style.display = 'block';
+          media.style.margin = '10px 0';
+          
+          // Définir la taille si elle n'existe pas
+          if (!media.style.width || media.style.width === '' || media.style.width === 'auto') {
+            if (media.tagName === 'IMG' && !media.complete) {
+              media.onload = () => {
+                const naturalWidth = media.naturalWidth || 500;
+                const defaultWidth = isMobile ? Math.min(naturalWidth, 300) : Math.min(naturalWidth, 500);
+                media.style.width = defaultWidth + 'px';
+                onUpdateNote(selectedNote.id, 'content', quill.root.innerHTML);
+              };
+            } else {
+              const naturalWidth = media.naturalWidth || media.videoWidth || media.offsetWidth || 500;
+              const defaultWidth = isMobile ? Math.min(naturalWidth, 300) : Math.min(naturalWidth, 500);
+              media.style.width = defaultWidth + 'px';
+            }
+          }
 
-            let isInteracting = false;
-            let startX, startY, startWidth;
-            let lastTouchDistance = 0;
-            let initialPinchWidth = 0;
+          // Ne pas réattacher les événements si déjà fait
+          if (wasResizable) return;
 
-            // GESTION SOURIS (Desktop)
-            media.addEventListener('wheel', (e) => {
-              if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                const newWidth = media.offsetWidth * delta;
-                media.style.width = newWidth + 'px';
+          let isResizing = false;
+          let startWidth;
+          let lastTouchDistance = 0;
+
+          const saveDimensions = () => {
+            setTimeout(() => {
+              if (quillRef.current) {
+                onUpdateNote(selectedNote.id, 'content', quillRef.current.root.innerHTML);
               }
-            });
+            }, 100);
+          };
 
-            media.addEventListener('mousedown', (e) => {
-              if (e.button === 0) {
-                e.preventDefault();
-                e.stopPropagation();
-                startX = e.clientX;
-                startY = e.clientY;
-                isInteracting = true;
-              }
-            });
+          // GESTION SOURIS - Ctrl+Scroll uniquement
+          const handleWheel = (e) => {
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              const delta = e.deltaY > 0 ? 0.9 : 1.1;
+              const newWidth = media.offsetWidth * delta;
+              const minWidth = 50;
+              const maxWidth = 1000;
+              media.style.width = Math.max(minWidth, Math.min(maxWidth, newWidth)) + 'px';
+              saveDimensions();
+            }
+          };
 
-            document.addEventListener('mousemove', (e) => {
-              if (isInteracting) {
-                e.preventDefault();
-                e.stopPropagation();
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                
-                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-                  media.style.position = 'relative';
-                  media.style.left = (parseFloat(media.style.left) || 0) + deltaX + 'px';
-                  media.style.top = (parseFloat(media.style.top) || 0) + deltaY + 'px';
-                  startX = e.clientX;
-                  startY = e.clientY;
-                }
-              }
-            });
+          // GESTION TACTILE - Pinch à 2 doigts uniquement
+          const getTouchDistance = (touch1, touch2) => {
+            const dx = touch2.clientX - touch1.clientX;
+            const dy = touch2.clientY - touch1.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+          };
 
-            document.addEventListener('mouseup', () => {
-              isInteracting = false;
-            });
+          const handleTouchStart = (e) => {
+            // Seulement avec 2 doigts = pinch pour redimensionner
+            if (e.touches.length === 2) {
+              e.preventDefault();
+              e.stopPropagation();
+              const touch1 = e.touches[0];
+              const touch2 = e.touches[1];
+              lastTouchDistance = getTouchDistance(touch1, touch2);
+              startWidth = media.offsetWidth;
+              isResizing = true;
+              
+              // Indication visuelle
+              media.style.opacity = '0.7';
+              media.style.transition = 'opacity 0.1s';
+            }
+          };
 
-            // GESTION TACTILE (Mobile) - OPTIMISÉE POUR ZOOM
-            const getTouchDistance = (touch1, touch2) => {
-              const dx = touch2.clientX - touch1.clientX;
-              const dy = touch2.clientY - touch1.clientY;
-              return Math.sqrt(dx * dx + dy * dy);
-            };
-
-            media.addEventListener('touchstart', (e) => {
+          const handleTouchMove = (e) => {
+            if (!isResizing) return;
+            
+            if (e.touches.length === 2) {
+              e.preventDefault();
               e.stopPropagation();
               
-              if (e.touches.length === 1) {
-                // Un seul doigt : déplacement
-                const touch = e.touches[0];
-                startX = touch.clientX;
-                startY = touch.clientY;
-                isInteracting = true;
-              } else if (e.touches.length === 2) {
-                // Deux doigts : zoom (pinch)
-                e.preventDefault();
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                lastTouchDistance = getTouchDistance(touch1, touch2);
-                initialPinchWidth = media.offsetWidth;
-                startWidth = media.offsetWidth;
-                isInteracting = true;
+              const touch1 = e.touches[0];
+              const touch2 = e.touches[1];
+              const currentDistance = getTouchDistance(touch1, touch2);
+              
+              if (lastTouchDistance > 0) {
+                const scale = currentDistance / lastTouchDistance;
+                let newWidth = startWidth * scale;
+                
+                const minWidth = isMobile ? 100 : 50;
+                const maxWidth = isMobile ? 2000 : 1000;
+                
+                newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+                media.style.width = newWidth + 'px';
               }
-            });
+              
+              lastTouchDistance = currentDistance;
+              startWidth = media.offsetWidth;
+            }
+          };
 
-            media.addEventListener('touchmove', (e) => {
-              if (!isInteracting) return;
-
-              if (e.touches.length === 1) {
-                // Un seul doigt : déplacement
-                e.preventDefault();
-                const touch = e.touches[0];
-                const deltaX = touch.clientX - startX;
-                const deltaY = touch.clientY - startY;
-                
-                if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-                  media.style.position = 'relative';
-                  media.style.left = (parseFloat(media.style.left) || 0) + deltaX + 'px';
-                  media.style.top = (parseFloat(media.style.top) || 0) + deltaY + 'px';
-                  startX = touch.clientX;
-                  startY = touch.clientY;
-                }
-              } else if (e.touches.length === 2) {
-                // Deux doigts : zoom (pinch)
-                e.preventDefault();
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                const currentDistance = getTouchDistance(touch1, touch2);
-                
-                if (lastTouchDistance > 0) {
-                  // Calcul du ratio de zoom
-                  const scale = currentDistance / lastTouchDistance;
-                  let newWidth = startWidth * scale;
-                  
-                  // Limites de taille plus larges pour le mobile
-                  const minWidth = isMobile ? 100 : 50;
-                  const maxWidth = isMobile ? 2000 : 1000;
-                  
-                  // Appliquer les limites
-                  newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-                  
-                  media.style.width = newWidth + 'px';
-                }
-                
-                lastTouchDistance = currentDistance;
-                startWidth = media.offsetWidth;
-              }
-            });
-
-            media.addEventListener('touchend', (e) => {
-              isInteracting = false;
+          const handleTouchEnd = (e) => {
+            if (isResizing) {
+              isResizing = false;
               lastTouchDistance = 0;
-              initialPinchWidth = 0;
-              
-              if (e.changedTouches.length === 1 && !e.cancelable) {
-                e.stopPropagation();
-              }
-            });
+              media.style.opacity = '1';
+              media.style.transition = '';
+              saveDimensions();
+            }
+          };
 
-            media.addEventListener('touchcancel', () => {
-              isInteracting = false;
-              lastTouchDistance = 0;
-              initialPinchWidth = 0;
-            });
+          // Appui long pour afficher un menu de redimensionnement
+          let longPressTimer;
+          const handleLongPress = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const menu = document.createElement('div');
+            menu.style.cssText = `
+              position: fixed;
+              bottom: 80px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: #2a2a2a;
+              border: 1px solid #404040;
+              border-radius: 12px;
+              padding: 12px;
+              display: flex;
+              gap: 8px;
+              z-index: 1000;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            
+            const createButton = (text, action) => {
+              const btn = document.createElement('button');
+              btn.textContent = text;
+              btn.style.cssText = `
+                padding: 10px 16px;
+                background: #404040;
+                color: #e0e0e0;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                cursor: pointer;
+              `;
+              btn.onclick = () => {
+                action();
+                document.body.removeChild(menu);
+              };
+              return btn;
+            };
+            
+            menu.appendChild(createButton('+ Plus grand', () => {
+              const newWidth = media.offsetWidth * 1.2;
+              media.style.width = Math.min(newWidth, 2000) + 'px';
+              saveDimensions();
+            }));
+            
+            menu.appendChild(createButton('- Plus petit', () => {
+              const newWidth = media.offsetWidth * 0.8;
+              media.style.width = Math.max(newWidth, 100) + 'px';
+              saveDimensions();
+            }));
+            
+            menu.appendChild(createButton('↻ Taille originale', () => {
+              media.style.width = '';
+              saveDimensions();
+            }));
+            
+            menu.appendChild(createButton('✕', () => {
+              document.body.removeChild(menu);
+            }));
+            
+            document.body.appendChild(menu);
+          };
 
-            // Double-tap pour réinitialiser la taille (mobile)
-            let lastTapTime = 0;
-            media.addEventListener('touchend', (e) => {
-              const currentTime = new Date().getTime();
-              const tapLength = currentTime - lastTapTime;
-              
-              if (tapLength < 300 && tapLength > 0 && e.touches.length === 0) {
-                // Double-tap détecté : réinitialiser la taille
-                e.preventDefault();
-                media.style.width = '';
-                media.style.left = '';
-                media.style.top = '';
-                media.style.position = '';
-              }
-              
-              lastTapTime = currentTime;
-            });
+          const handleTouchStartLongPress = (e) => {
+            if (e.touches.length === 1) {
+              longPressTimer = setTimeout(() => handleLongPress(e), 500);
+            }
+          };
+
+          const handleTouchEndLongPress = () => {
+            clearTimeout(longPressTimer);
+          };
+
+          // ATTACHER LES ÉVÉNEMENTS
+          media.addEventListener('wheel', handleWheel, { passive: false });
+          media.addEventListener('touchstart', handleTouchStart, { passive: false });
+          media.addEventListener('touchmove', handleTouchMove, { passive: false });
+          media.addEventListener('touchend', handleTouchEnd);
+          
+          // Appui long sur mobile
+          if (isMobile) {
+            media.addEventListener('touchstart', handleTouchStartLongPress);
+            media.addEventListener('touchend', handleTouchEndLongPress);
+            media.addEventListener('touchmove', handleTouchEndLongPress);
           }
+
+          // Stocker les handlers pour pouvoir les retirer
+          media._resizeHandlers = {
+            wheel: handleWheel,
+            touchstart: handleTouchStart,
+            touchmove: handleTouchMove,
+            touchend: handleTouchEnd,
+            touchstartlong: handleTouchStartLongPress,
+            touchendlong: handleTouchEndLongPress
+          };
         });
       };
 
+      // Appeler immédiatement pour les médias déjà présents
+      setTimeout(makeMediaResizable, 100);
+
+      // Observer les changements
       const observer = new MutationObserver(makeMediaResizable);
       observer.observe(quill.root, { childList: true, subtree: true });
-      makeMediaResizable();
 
       quillRef.current = quill;
 
       return () => {
         observer.disconnect();
+        
+        // Nettoyer les event listeners
+        const allMedia = quill.root.querySelectorAll('img, video');
+        allMedia.forEach(media => {
+          if (media._resizeHandlers) {
+            media.removeEventListener('wheel', media._resizeHandlers.wheel);
+            media.removeEventListener('mousedown', media._resizeHandlers.mousedown);
+            media.removeEventListener('touchstart', media._resizeHandlers.touchstart);
+            media.removeEventListener('touchmove', media._resizeHandlers.touchmove);
+            media.removeEventListener('touchend', media._resizeHandlers.touchend);
+          }
+        });
       };
     }
   }, [selectedNote?.id, isMobile]);
@@ -2084,7 +2325,7 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
           </button>
         </div>
         
-        <div id="editor" ref={quillRef} style={{ 
+        <div id="editor" style={{ 
           flex: 1,
           backgroundColor: 'transparent',
           padding: isMobile ? '16px 8px 80px 8px' : '20px',
@@ -2138,8 +2379,8 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
         minHeight: isMobile ? '68px' : '64px',
         position: 'fixed',
         bottom: 0,
-        left: 0,
-        right: 0,
+        left: isMobile ? 0 : '310px',  
+        right: isMobile ? 0 : '20px',  
         zIndex: 100,
         overflowX: 'auto',
         overflowY: 'hidden',
@@ -2150,122 +2391,24 @@ function MainContent({ selectedNote, folders, onUpdateNote, onCreateFolder }) {
       }}>
         <ul className="tool-bar-list" style={{
           display: 'flex',
-          gap: isMobile ? '8px' : '8px',
+          gap: isMobile ? '8px' : '48px',
           flexWrap: 'nowrap',
           margin: 0,
           padding: 0,
           listStyle: 'none',
           alignItems: 'center'
         }}>
-          <li><button className="image" onClick={() => imageAction()} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/image.png" alt="Image" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button className="mind-map" onClick={() => setShowMindMapPopup(true)} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/mindmap.png" alt="Carte mentale" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('bold')} className={activeFormats.bold ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/bold.png" alt="Gras" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('italic')} className={activeFormats.italic ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/italic.png" alt="Italique" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('underline')} className={activeFormats.underline ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/underline.png" alt="Souligné" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('strike')} className={activeFormats.strike ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/strikethrough.png" alt="Barré" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('list', 'bullet')} className={activeFormats['list-bullet'] ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/bullet_list.png" alt="Liste à puces" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('list', 'ordered')} className={activeFormats['list-ordered'] ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/numbered_list.png" alt="Liste numérotée" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('header', 1)} className={activeFormats['header-1'] ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/h1.png" alt="Titre 1" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('header', 2)} className={activeFormats['header-2'] ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/h2.png" alt="Titre 2" style={{ width: '20px', height: '20px' }}/></button></li>
-          
-          <li><button onClick={() => handleFormat('header', 3)} className={activeFormats['header-3'] ? 'active' : ''} style={{ 
-            minWidth: isMobile ? '48px' : '40px',
-            minHeight: isMobile ? '48px' : '40px',
-            padding: isMobile ? '12px' : '8px',
-            borderRadius: isMobile ? '12px' : '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}><img src="img/h3.png" alt="Titre 3" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button className="image" onClick={() => imageAction()} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/image.png" alt="Image" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button className="mind-map" onClick={() => setShowMindMapPopup(true)} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/mindmap.png" alt="Carte mentale" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('bold')} className={activeFormats.bold ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/bold.png" alt="Gras" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('italic')} className={activeFormats.italic ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/italic.png" alt="Italique" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('underline')} className={activeFormats.underline ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/underline.png" alt="Souligné" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('strike')} className={activeFormats.strike ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/strikethrough.png" alt="Barré" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('list', 'bullet')} className={activeFormats['list-bullet'] ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/bullet_list.png" alt="Liste à puces" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('list', 'ordered')} className={activeFormats['list-ordered'] ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/numbered_list.png" alt="Liste numérotée" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('header', 1)} className={activeFormats['header-1'] ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/h1.png" alt="Titre 1" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('header', 2)} className={activeFormats['header-2'] ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/h2.png" alt="Titre 2" style={{ width: '20px', height: '20px' }}/></button></li>
+          <li><button onClick={() => handleFormat('header', 3)} className={activeFormats['header-3'] ? 'active' : ''} style={{ minWidth: isMobile ? '48px' : '40px', minHeight: isMobile ? '48px' : '40px', padding: isMobile ? '12px' : '8px', borderRadius: isMobile ? '12px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src="img/h3.png" alt="Titre 3" style={{ width: '20px', height: '20px' }}/></button></li>
         </ul>
       </div>
     </div>

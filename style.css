@@ -2466,3 +2466,25 @@ body.light-mode .menu-burger:hover {
 body.light-mode .sidebar-overlay {
   background-color: rgba(0, 0, 0, 0.3);
 }
+
+/* ==================== EXPORT PDF ==================== */
+.export-pdf {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.export-pdf:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.export-pdf img {
+  width: 24px;
+  height: 24px;
+}
